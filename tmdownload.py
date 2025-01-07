@@ -39,9 +39,9 @@ def main():
     with httpx.Client(timeout=30) as client:
         sectors = get_sectors(client)
 
-        pbar = tqdm(sorted(sectors, key=lambda s: (s.x, s.y)))
+        pbar = tqdm(sorted(sectors, key=lambda s: abs(s.x) + abs(s.y)))
         for sector in pbar:
-            pbar.set_description(f"sector {sector.names[0].text}, milieu {sector.milieu}")
+            pbar.set_description(f"sector {sector.names[0].text}, milieu {sector.milieu}, at {sector.x},{sector.y}")
             sector_dir = OUT_PATH / sector.names[0].text / sector.milieu
             sector_dir.mkdir(parents=True, exist_ok=True)
 
