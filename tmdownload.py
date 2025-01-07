@@ -1,5 +1,4 @@
 from pathlib import Path
-from time import sleep
 
 import httpx
 import pydantic
@@ -91,11 +90,10 @@ def dl_poster(client, sector, sector_dir, style):
         response.raise_for_status()
         with pdf_path.open("wb") as f:
             f.write(response.content)
-        sleep(5)
 
 
 def get_sectors(client) -> list[Sector]:
-    response = client.get(str(BASE_URL))
+    response = client.get(str(BASE_URL % {"tag": "OTU", "requireData": 1}))
     response.raise_for_status()
     with (OUT_PATH / "sectors.json").open("w") as f:
         f.write(response.text)
