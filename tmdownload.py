@@ -7,6 +7,7 @@ from tqdm import tqdm
 from yarl import URL
 
 BASE_URL = URL("https://travellermap.com/data")
+OUT_PATH = Path.cwd() / "out"
 
 
 class Name(pydantic.BaseModel):
@@ -33,29 +34,22 @@ class Model(pydantic.BaseModel):
 
 
 def main():
-    with httpx.Client(timeout=30) as client:
-        sectors = get_sectors(client)
-        with (Path.cwd() / "out").open("w") as f:
-            f.write(sectors)
+    OUT_PATH.mkdir(parents=True, exist_ok=True)
 
-class Model(pydantic.BaseModel):
-    sectors: list[Sector] = pydantic.Field(..., alias="Sectors")
-
-
-def main():
     with httpx.Client(timeout=30) as client:
         sectors = get_sectors(client)
 
         pbar = tqdm(sorted(sectors, key=lambda s: (s.x, s.y)))
         for sector in pbar:
             pbar.set_description(f"sector {sector.names[0].text}, milieu {sector.milieu}")
-            sector_dir = Path.cwd() / "out" / sector.names[0].text / sector.milieu
+            sector_dir = OUT_PATH / sector.names[0].text / sector.milieu
             sector_dir.mkdir(parents=True, exist_ok=True)
 
             dl_text(client, sector, sector_dir)
-            dl_tsv(client, sector, sector_dir)
-            for style in ["poster", "atlas", "fasa"]:
-                dl_poster(client, sector, sector_dir, style)
+            worlds = dl_tsv(client, sector, sector_dir)
+            if worlds:
+                for style in ["poster", "atlas", "fasa"]:
+                    dl_poster(client, sector, sector_dir, style)
 
         # sec_tsv_url = BASE_URL / "sec" % {"sector": sector.names[0].text, "type": "TabDelimited"}
         # response = httpx.get(str(sec_tsv_url))
@@ -77,8 +71,12 @@ def dl_tsv(client, sector, sector_dir):
     sec_tsv_url = BASE_URL / "sec" % {"sector": sector.names[0].text, "milieu": sector.milieu, "type": "TabDelimited"}
     response = client.get(str(sec_tsv_url))
     response.raise_for_status()
-    with (sector_dir / f"{sector.names[0].text}.tsv").open("w") as f:
-        f.write(response.text)
+    if response.text:
+        with (sector_dir / f"{sector.names[0].text}.tsv").open("w") as f:
+            f.write(response.text)
+            return True
+    else:
+        return False
 
 
 def dl_poster(client, sector, sector_dir, style):
@@ -100,7 +98,7 @@ def dl_poster(client, sector, sector_dir, style):
 def get_sectors(client) -> list[Sector]:
     response = client.get(str(BASE_URL))
     response.raise_for_status()
-    with (Path.cwd() / "out" / "sectors.json").open("w") as f:
+    with (OUT_PATH / "sectors.json").open("w") as f:
         f.write(response.text)
     data = Model.model_validate(response.json())
     return data.sectors
