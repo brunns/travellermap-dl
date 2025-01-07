@@ -36,18 +36,17 @@ class Model(pydantic.BaseModel):
 def main():
     OUT_PATH.mkdir(parents=True, exist_ok=True)
 
-    with httpx.Client(timeout=30) as client:
+    with httpx.Client(timeout=30, transport=httpx.HTTPTransport(retries=5)) as client:
         sectors = get_sectors(client)
 
-        pbar = tqdm(sorted(sectors, key=lambda s: abs(s.x) + abs(s.y)))
+        pbar = tqdm(sorted(sectors, key=lambda s: (abs(s.x) + abs(s.y), s.names[0].text)))
         for sector in pbar:
             pbar.set_description(f"sector {sector.names[0].text}, milieu {sector.milieu}, at {sector.x},{sector.y}")
             sector_dir = OUT_PATH / sector.names[0].text / sector.milieu
             sector_dir.mkdir(parents=True, exist_ok=True)
 
             dl_text(client, sector, sector_dir)
-            worlds = dl_tsv(client, sector, sector_dir)
-            if worlds:
+            if dl_tsv(client, sector, sector_dir):
                 for style in ["poster", "atlas", "fasa"]:
                     dl_poster(client, sector, sector_dir, style)
 
@@ -84,7 +83,7 @@ def dl_poster(client, sector, sector_dir, style):
         BASE_URL
         / sector.names[0].text
         / "image"
-        % {"milieu": sector.milieu, "accept": "application/pdf", "style": style}
+        % {"milieu": sector.milieu, "accept": "application/pdf", "style": style, "options": "9211"}
     )
     pdf_path = sector_dir / f"{sector.names[0].text} {style}.pdf"
     if not pdf_path.exists():
@@ -92,7 +91,7 @@ def dl_poster(client, sector, sector_dir, style):
         response.raise_for_status()
         with pdf_path.open("wb") as f:
             f.write(response.content)
-        sleep(10)
+        sleep(5)
 
 
 def get_sectors(client) -> list[Sector]:
