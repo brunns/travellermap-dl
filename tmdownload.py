@@ -1,3 +1,17 @@
+#!/usr/bin/env -S uv run
+# /// script
+# requires-python = ">=3.13"
+# dependencies = [
+#     "httpx",
+#     "pydantic",
+#     "tqdm",
+#     "yarl",
+# ]
+# ///
+
+from __future__ import annotations
+
+from itertools import product
 from pathlib import Path
 
 import httpx
@@ -7,6 +21,86 @@ from yarl import URL
 
 BASE_URL = URL("https://travellermap.com/data")
 OUT_PATH = Path.cwd() / "out"
+
+
+def main() -> None:
+    OUT_PATH.mkdir(parents=True, exist_ok=True)
+
+    with httpx.Client(timeout=30, transport=httpx.HTTPTransport(retries=5)) as client:
+        sectors = get_sectors(client)
+
+        pbar = tqdm(sorted(sectors, key=lambda s: (abs(s.x) + abs(s.y), s.names[0].text)))
+        for sector in pbar:
+            pbar.set_description(f"sector {sector.names[0].text}, milieu {sector.milieu}, at {sector.x},{sector.y}")
+            sector_dir = OUT_PATH / sector.names[0].text / sector.milieu
+            sector_dir.mkdir(parents=True, exist_ok=True)
+
+            dl_text(client, sector, sector_dir)
+            dl_json(client, sector, sector_dir)
+            if dl_tsv(client, sector, sector_dir):
+                for style, scale in product(["poster", "atlas", "fasa"], [64, 128]):
+                    dl_poster(client, sector, sector_dir, style, scale)
+
+        # sec_tsv_url = BASE_URL / "sec" % {"sector": sector.names[0].text, "type": "TabDelimited"}
+        # response = httpx.get(str(sec_tsv_url))
+        # response.raise_for_status()
+        # reader = csv.DictReader(StringIO(response.text), delimiter="\t")
+        # for row in reader:
+        #     print(row)
+
+
+def dl_text(client: httpx.Client, sector: Sector, sector_dir: Path) -> None:
+    sec_text_url = BASE_URL / "sec" % {"sector": sector.names[0].text, "milieu": sector.milieu}
+    response = client.get(str(sec_text_url))
+    response.raise_for_status()
+    with (sector_dir / f"{sector.names[0].text}.txt").open("w") as f:
+        f.write(response.text)
+
+
+def dl_json(client: httpx.Client, sector: Sector, sector_dir: Path) -> None:
+    sec_text_url = (
+        BASE_URL / sector.names[0].text / "metadata" % {"milieu": sector.milieu, "accept": "application/json"}
+    )
+    response = client.get(str(sec_text_url))
+    response.raise_for_status()
+    with (sector_dir / f"{sector.names[0].text}.json").open("w") as f:
+        f.write(response.text)
+
+
+def dl_tsv(client: httpx.Client, sector: Sector, sector_dir: Path) -> bool:
+    sec_tsv_url = BASE_URL / "sec" % {"sector": sector.names[0].text, "milieu": sector.milieu, "type": "TabDelimited"}
+    response = client.get(str(sec_tsv_url))
+    response.raise_for_status()
+    if response.text:
+        with (sector_dir / f"{sector.names[0].text}.tsv").open("w") as f:
+            f.write(response.text)
+            return True
+    else:
+        return False
+
+
+def dl_poster(client: httpx.Client, sector: Sector, sector_dir: Path, style: str, scale: int) -> None:
+    sec_tile_url = (
+        BASE_URL
+        / sector.names[0].text
+        / "image"
+        % {"milieu": sector.milieu, "accept": "application/pdf", "style": style, "options": "9211", "scale": scale}
+    )
+    pdf_path = sector_dir / f"{sector.names[0].text} {style} {scale}.pdf"
+    if not pdf_path.exists():
+        response = client.get(str(sec_tile_url))
+        response.raise_for_status()
+        with pdf_path.open("wb") as f:
+            f.write(response.content)
+
+
+def get_sectors(client: httpx.Client) -> list[Sector]:
+    response = client.get(str(BASE_URL % {"tag": "OTU", "requireData": 1}))
+    response.raise_for_status()
+    with (OUT_PATH / "sectors.json").open("w") as f:
+        f.write(response.text)
+    data = Model.model_validate(response.json())
+    return data.sectors
 
 
 class Name(pydantic.BaseModel):
@@ -23,91 +117,9 @@ class Sector(pydantic.BaseModel):
     tags: str = pydantic.Field(..., alias="Tags")
     names: list[Name] = pydantic.Field(..., alias="Names")
 
-    abbreviation: str | None = pydantic.Field(None, alias="Abbreviation")
-    tags: str = pydantic.Field(..., alias="Tags")
-    names: list[Name] = pydantic.Field(..., alias="Names")
-
 
 class Model(pydantic.BaseModel):
     sectors: list[Sector] = pydantic.Field(..., alias="Sectors")
-
-
-def main():
-    OUT_PATH.mkdir(parents=True, exist_ok=True)
-
-    with httpx.Client(timeout=30, transport=httpx.HTTPTransport(retries=5)) as client:
-        sectors = get_sectors(client)
-
-        pbar = tqdm(sorted(sectors, key=lambda s: (abs(s.x) + abs(s.y), s.names[0].text)))
-        for sector in pbar:
-            pbar.set_description(f"sector {sector.names[0].text}, milieu {sector.milieu}, at {sector.x},{sector.y}")
-            sector_dir = OUT_PATH / sector.names[0].text / sector.milieu
-            sector_dir.mkdir(parents=True, exist_ok=True)
-
-            dl_text(client, sector, sector_dir)
-            dl_json(client, sector, sector_dir)
-            if dl_tsv(client, sector, sector_dir):
-                for style in ["poster", "atlas", "fasa"]:
-                    dl_poster(client, sector, sector_dir, style)
-
-        # sec_tsv_url = BASE_URL / "sec" % {"sector": sector.names[0].text, "type": "TabDelimited"}
-        # response = httpx.get(str(sec_tsv_url))
-        # response.raise_for_status()
-        # reader = csv.DictReader(StringIO(response.text), delimiter="\t")
-        # for row in reader:
-        #     print(row)
-
-
-def dl_text(client, sector, sector_dir):
-    sec_text_url = BASE_URL / "sec" % {"sector": sector.names[0].text, "milieu": sector.milieu}
-    response = client.get(str(sec_text_url))
-    response.raise_for_status()
-    with (sector_dir / f"{sector.names[0].text}.txt").open("w") as f:
-        f.write(response.text)
-
-
-def dl_json(client, sector, sector_dir):
-    sec_text_url = BASE_URL /sector.names[0].text/ "metadata" % {"milieu": sector.milieu, "accept": "application/json"}
-    response = client.get(str(sec_text_url))
-    response.raise_for_status()
-    with (sector_dir / f"{sector.names[0].text}.json").open("w") as f:
-        f.write(response.text)
-
-
-def dl_tsv(client, sector, sector_dir):
-    sec_tsv_url = BASE_URL / "sec" % {"sector": sector.names[0].text, "milieu": sector.milieu, "type": "TabDelimited"}
-    response = client.get(str(sec_tsv_url))
-    response.raise_for_status()
-    if response.text:
-        with (sector_dir / f"{sector.names[0].text}.tsv").open("w") as f:
-            f.write(response.text)
-            return True
-    else:
-        return False
-
-
-def dl_poster(client, sector, sector_dir, style):
-    sec_tile_url = (
-        BASE_URL
-        / sector.names[0].text
-        / "image"
-        % {"milieu": sector.milieu, "accept": "application/pdf", "style": style, "options": "9211"}
-    )
-    pdf_path = sector_dir / f"{sector.names[0].text} {style}.pdf"
-    if not pdf_path.exists():
-        response = client.get(str(sec_tile_url))
-        response.raise_for_status()
-        with pdf_path.open("wb") as f:
-            f.write(response.content)
-
-
-def get_sectors(client) -> list[Sector]:
-    response = client.get(str(BASE_URL % {"tag": "OTU", "requireData": 1}))
-    response.raise_for_status()
-    with (OUT_PATH / "sectors.json").open("w") as f:
-        f.write(response.text)
-    data = Model.model_validate(response.json())
-    return data.sectors
 
 
 if __name__ == "__main__":

@@ -1,6 +1,6 @@
 # Download sector data from https://travellermap.com/
 
-See [The Travelelr Map API](https://travellermap.com/doc/api).
+See [The Traveller Map API](https://travellermap.com/doc/api).
 
 ## Tasks
 
