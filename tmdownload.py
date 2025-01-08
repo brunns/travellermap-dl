@@ -45,6 +45,7 @@ def main():
             sector_dir.mkdir(parents=True, exist_ok=True)
 
             dl_text(client, sector, sector_dir)
+            dl_json(client, sector, sector_dir)
             if dl_tsv(client, sector, sector_dir):
                 for style in ["poster", "atlas", "fasa"]:
                     dl_poster(client, sector, sector_dir, style)
@@ -62,6 +63,14 @@ def dl_text(client, sector, sector_dir):
     response = client.get(str(sec_text_url))
     response.raise_for_status()
     with (sector_dir / f"{sector.names[0].text}.txt").open("w") as f:
+        f.write(response.text)
+
+
+def dl_json(client, sector, sector_dir):
+    sec_text_url = BASE_URL /sector.names[0].text/ "metadata" % {"milieu": sector.milieu, "accept": "application/json"}
+    response = client.get(str(sec_text_url))
+    response.raise_for_status()
+    with (sector_dir / f"{sector.names[0].text}.json").open("w") as f:
         f.write(response.text)
 
 
