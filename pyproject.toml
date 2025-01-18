@@ -5,11 +5,12 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
-     "yarl",
      "SQLAlchemy",
-     "pydantic",
      "httpx",
+     "pydantic",
+     "python-json-logger",
      "tqdm",
+     "yarl",
 ]
 
 [tool.ruff]

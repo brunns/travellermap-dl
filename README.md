@@ -26,4 +26,5 @@ Check formatting & other linting.
 ```sh
 uv run --with ruff ruff format --check
 uv run --with ruff ruff check 
+uv run --with pyright pyright
 ```
