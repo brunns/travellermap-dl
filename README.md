@@ -1,4 +1,4 @@
-# Download sector data from https://travellermap.com/
+# Download sector data from https://travellermap.com
 
 See [The Traveller Map API](https://travellermap.com/doc/api).
 
@@ -8,6 +8,24 @@ See [The Traveller Map API](https://travellermap.com/doc/api).
 
 ```sh
 uv run tmdownload.py -vv
+```
+
+### run-poster
+
+```sh
+uv run tmdownload.py -p
+```
+
+### run-db
+
+```sh
+uv run tmdownload.py -d
+```
+
+### explore-db
+
+```sh
+uv run --with datasette datasette out/travellermap.db
 ```
 
 ### format

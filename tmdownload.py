@@ -33,6 +33,7 @@ from tqdm import tqdm
 from yarl import URL
 
 STARPORT_DATA = [
+    {"value": "?", "name": "Unknown", "description": "Unknown"},
     {
         "value": "A",
         "name": "Class A",
@@ -48,28 +49,55 @@ STARPORT_DATA = [
         "name": "Class C",
         "description": "Routine quality installation. Only unrefined fuel available. Reasonable repair facilities present. Scout base may be present.",
     },
-    {"value": "D", "name": "Class D", "description": ""},
-    {"value": "E", "name": "Class E", "description": ""},
-    {"value": "X", "name": "Class X", "description": ""},
+    {
+        "value": "D",
+        "name": "Class D",
+        "description": "Poor quality installation. Only unrefined fuel available. No repair or shipyard facilities present. Scout base may be present.",
+    },
+    {
+        "value": "E",
+        "name": "Class E",
+        "description": "Frontier Installation. Essentially a marked spot of bedrock with no fuel, facilities, or bases present.",
+    },
+    {"value": "X", "name": "Class X", "description": "No starport. No provision is made for any ship landings."},
+    {
+        "value": "F",
+        "name": "Spaceport Class F",
+        "description": "Good Quality. Minor damage repairable. Unrefined fuel available.",
+    },
+    {
+        "value": "G",
+        "name": "Spaceport Class G",
+        "description": "Poor Quality. Superficial repairs possible. Unrefined fuel available.",
+    },
+    {"value": "H", "name": "Spaceport Class H", "description": "Primitive Quality. No repairs or fuel available."},
+    {"value": "Y", "name": "None", "description": "None."},
 ]
 SIZE_DATA = [
-    {"value": "0", "description": ""},
-    {"value": "1", "description": ""},
-    {"value": "2", "description": ""},
-    {"value": "3", "description": ""},
-    {"value": "4", "description": ""},
-    {"value": "5", "description": ""},
-    {"value": "6", "description": ""},
-    {"value": "7", "description": ""},
-    {"value": "8", "description": ""},
-    {"value": "9", "description": ""},
-    {"value": "A", "description": ""},
+    {"value": "?", "description": "Unknown"},
+    {"value": "0", "description": "Asteroid/Planetoid Belt."},
+    {"value": "1", "description": "1000 miles (1600 km) ."},
+    {"value": "2", "description": "2000 miles (3200 km)."},
+    {"value": "3", "description": "3000 miles (4800 km)."},
+    {"value": "4", "description": "4000 miles (6400 km)."},
+    {"value": "5", "description": "5000 miles (8000 km)."},
+    {"value": "6", "description": "6000 miles (9600 km)."},
+    {"value": "7", "description": "7000 miles (11200 km)."},
+    {"value": "8", "description": "8000 miles (12800 km) ."},
+    {"value": "9", "description": "9000 miles (14400 km)."},
+    {"value": "A", "description": "10000 miles (16000 km)."},
+    {"value": "B", "description": "11000 miles (18800 km)."},
+    {"value": "C", "description": "12000 miles (19200 km)."},
+    {"value": "D", "description": "13000 miles (20800 km)."},
+    {"value": "E", "description": "14000 miles (22400 km)."},
+    {"value": "F", "description": "15000 miles (24000 km)."},
 ]
 ATMOSPHERE_DATA = [
-    {"value": "0", "description": ""},
-    {"value": "1", "description": ""},
-    {"value": "2", "description": ""},
-    {"value": "3", "description": ""},
+    {"value": "?", "description": "Unknown"},
+    {"value": "0", "description": "No atmosphere."},
+    {"value": "1", "description": "Trace"},
+    {"value": "2", "description": "Very thin, tainted."},
+    {"value": "3", "description": "Very thin."},
     {"value": "4", "description": ""},
     {"value": "5", "description": ""},
     {"value": "6", "description": ""},
@@ -79,8 +107,12 @@ ATMOSPHERE_DATA = [
     {"value": "A", "description": ""},
     {"value": "B", "description": ""},
     {"value": "C", "description": ""},
+    {"value": "D", "description": ""},
+    {"value": "E", "description": ""},
+    {"value": "F", "description": ""},
 ]
 HYDROSPHERE_DATA = [
+    {"value": "?", "description": "Unknown"},
     {"value": "0", "description": ""},
     {"value": "1", "description": ""},
     {"value": "2", "description": ""},
@@ -94,6 +126,7 @@ HYDROSPHERE_DATA = [
     {"value": "A", "description": ""},
 ]
 GOVERNMENT_DATA = [
+    {"value": "?", "description": "Unknown"},
     {"value": "0", "description": ""},
     {"value": "1", "description": ""},
     {"value": "2", "description": ""},
@@ -108,8 +141,17 @@ GOVERNMENT_DATA = [
     {"value": "B", "description": ""},
     {"value": "C", "description": ""},
     {"value": "D", "description": ""},
+    {"value": "E", "description": ""},
+    {"value": "F", "description": ""},
+    {"value": "M", "description": "Military Dictatorship or Junta."},
+    {"value": "N", "description": ""},
+    {"value": "Q", "description": "Interim Government."},
+    {"value": "S", "description": "Slave World."},
+    {"value": "T", "description": "Technologically Elevated Dictator."},
+    {"value": "V", "description": "Viral Hell."},
 ]
 POPULATION_DATA = [
+    {"value": "?", "description": "Unknown"},
     {"value": "0", "description": ""},
     {"value": "1", "description": ""},
     {"value": "2", "description": ""},
@@ -121,8 +163,11 @@ POPULATION_DATA = [
     {"value": "8", "description": ""},
     {"value": "9", "description": ""},
     {"value": "A", "description": ""},
+    {"value": "B", "description": ""},
+    {"value": "C", "description": ""},
 ]
 LAW_LEVEL_DATA = [
+    {"value": "?", "description": "Unknown"},
     {"value": "0", "description": ""},
     {"value": "1", "description": ""},
     {"value": "2", "description": ""},
@@ -134,8 +179,18 @@ LAW_LEVEL_DATA = [
     {"value": "8", "description": ""},
     {"value": "9", "description": ""},
     {"value": "A", "description": ""},
+    {"value": "B", "description": ""},
+    {"value": "C", "description": ""},
+    {"value": "D", "description": ""},
+    {"value": "E", "description": ""},
+    {"value": "F", "description": ""},
+    {"value": "G", "description": ""},
+    {"value": "H", "description": ""},
+    {"value": "I", "description": ""},
+    {"value": "J", "description": ""},
 ]
 TECH_LEVEL_DATA = [
+    {"value": "?", "name": "", "description": "Unknown"},
     {"value": "0", "name": "", "description": ""},
     {"value": "1", "name": "", "description": ""},
     {"value": "2", "name": "", "description": ""},
@@ -153,6 +208,7 @@ TECH_LEVEL_DATA = [
     {"value": "E", "name": "", "description": ""},
     {"value": "F", "name": "", "description": ""},
     {"value": "G", "name": "", "description": ""},
+    {"value": "H", "name": "", "description": ""},
 ]
 
 VERSION = "0.1.0"
@@ -261,15 +317,15 @@ class ApiName(pydantic.BaseModel):
 
 
 class ApiProduct(pydantic.BaseModel):
-    author: str = pydantic.Field(..., alias="Author")
-    title: str = pydantic.Field(..., alias="Title")
-    publisher: str = pydantic.Field(..., alias="Publisher")
-    ref: str = pydantic.Field(..., alias="Ref")
+    author: str | None = pydantic.Field(None, alias="Author")
+    title: str | None = pydantic.Field(None, alias="Title")
+    publisher: str | None = pydantic.Field(None, alias="Publisher")
+    ref: str | None = pydantic.Field(None, alias="Ref")
 
 
 class ApiDataFile(pydantic.BaseModel):
-    source: str = pydantic.Field(..., alias="Source")
-    milieu: str = pydantic.Field(..., alias="Milieu")
+    source: str | None = pydantic.Field(None, alias="Source")
+    milieu: str | None = pydantic.Field(None, alias="Milieu")
 
 
 class ApiSubsector(pydantic.BaseModel):
@@ -401,28 +457,28 @@ class World(Base):
         sqlalchemy.String, nullable=False
     )  # Hex location within the subsector (e.g., "0203")
     population_id = sqlalchemy.Column(
-        sqlalchemy.Integer, sqlalchemy.ForeignKey("populations.id"), nullable=True
+        sqlalchemy.Integer, sqlalchemy.ForeignKey("populations.id"), nullable=False
     )  # Population (can be null if unknown)
     tech_level_id = sqlalchemy.Column(
-        sqlalchemy.Integer, sqlalchemy.ForeignKey("tech_levels.id"), nullable=True
+        sqlalchemy.Integer, sqlalchemy.ForeignKey("tech_levels.id"), nullable=False
     )  # TechLevel foreign key
     starport_id = sqlalchemy.Column(
-        sqlalchemy.Integer, sqlalchemy.ForeignKey("starports.id"), nullable=True
+        sqlalchemy.Integer, sqlalchemy.ForeignKey("starports.id"), nullable=False
     )  # Starport foreign key
     size_id = sqlalchemy.Column(
-        sqlalchemy.Integer, sqlalchemy.ForeignKey("sizes.id"), nullable=True
+        sqlalchemy.Integer, sqlalchemy.ForeignKey("sizes.id"), nullable=False
     )  # World size foreign key
     atmosphere_id = sqlalchemy.Column(
-        sqlalchemy.Integer, sqlalchemy.ForeignKey("atmospheres.id"), nullable=True
+        sqlalchemy.Integer, sqlalchemy.ForeignKey("atmospheres.id"), nullable=False
     )  # Atmosphere foreign key
     hydrosphere_id = sqlalchemy.Column(
-        sqlalchemy.Integer, sqlalchemy.ForeignKey("hydrospheres.id"), nullable=True
+        sqlalchemy.Integer, sqlalchemy.ForeignKey("hydrospheres.id"), nullable=False
     )  # Hydrosphere foreign key
     government_id = sqlalchemy.Column(
-        sqlalchemy.Integer, sqlalchemy.ForeignKey("governments.id"), nullable=True
+        sqlalchemy.Integer, sqlalchemy.ForeignKey("governments.id"), nullable=False
     )  # Government type foreign key
     law_level_id = sqlalchemy.Column(
-        sqlalchemy.Integer, sqlalchemy.ForeignKey("law_levels.id"), nullable=True
+        sqlalchemy.Integer, sqlalchemy.ForeignKey("law_levels.id"), nullable=False
     )  # Law level foreign key
     trade_codes = sqlalchemy.Column(sqlalchemy.String, nullable=True)  # Trade codes as a comma-separated string
     zone = sqlalchemy.Column(sqlalchemy.String, nullable=False)
@@ -443,6 +499,10 @@ class World(Base):
     law_level = sqlalchemy.orm.relationship("LawLevel")
     tech_level = sqlalchemy.orm.relationship("TechLevel")
 
+    @property
+    def uwp(self) -> str:
+        return f"{self.starport.value}{self.size.value}{self.atmosphere.value}{self.hydrosphere.value}{self.population.value}{self.government.value}{self.law_level.value}-{self.tech_level.value}"
+
     def __repr__(self) -> str:
         return (
             f"<World(name='{self.name}', "
@@ -458,6 +518,7 @@ class World(Base):
             f"tech_level='{self.tech_level.name if self.law_level else None}'"
             f"zone='{self.zone}', "
             f"bases='{self.bases}', "
+            ")>"
         )
 
 
@@ -586,7 +647,7 @@ def populate_database(sector: ApiSector, sector_dir: Path, session: Session):
     with (sector_dir / f"{sector.names[0].text}.tsv").open("r") as f:
         reader = csv.DictReader(f, delimiter="\t")
         for row in reader:
-            # {'(Ex)': '(E69-3)', 'Allegiance': 'ImDc', 'Nobility': 'B', 'PBG': '123', 'RU': '-2268', 'Remarks': 'Fl', 'SS': 'A', 'Stars': 'M2 V', 'UWP': 'C9C4733-9', 'W': '8', '[Cx]': '[4726]', '{Ix}': '{ 0 }'}
+            # See https://travellermap.com/doc/fileformats#t5-tab-delimited-format for columns
 
             starport, size, atmosphere, hydrosphere, population, government, law_level, _, tech_level, *_ = list(
                 row["UWP"]
@@ -596,14 +657,14 @@ def populate_database(sector: ApiSector, sector_dir: Path, session: Session):
                 name=row["Name"],
                 subsector=db_subsectors[row["SS"]],
                 hex_location=row["Hex"],
-                starport=session.query(Starport).filter_by(value=starport).first(),
-                size=session.query(Size).filter_by(value=size).first(),
-                atmosphere=session.query(Atmosphere).filter_by(value=atmosphere).first(),
-                hydrosphere=session.query(Hydrosphere).filter_by(value=hydrosphere).first(),
-                population=session.query(Population).filter_by(value=population).first(),
-                government=session.query(Government).filter_by(value=government).first(),
-                law_level=session.query(LawLevel).filter_by(value=law_level).first(),
-                tech_level=session.query(TechLevel).filter_by(value=tech_level).first(),
+                starport=session.query(Starport).filter_by(value=starport).one(),
+                size=session.query(Size).filter_by(value=size).one(),
+                atmosphere=session.query(Atmosphere).filter_by(value=atmosphere).one(),
+                hydrosphere=session.query(Hydrosphere).filter_by(value=hydrosphere).one(),
+                population=session.query(Population).filter_by(value=population).one(),
+                government=session.query(Government).filter_by(value=government).one(),
+                law_level=session.query(LawLevel).filter_by(value=law_level).one(),
+                tech_level=session.query(TechLevel).filter_by(value=tech_level).one(),
                 zone=row["Zone"],
                 bases=row["Bases"],
             )
