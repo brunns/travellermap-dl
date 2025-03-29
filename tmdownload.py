@@ -19,9 +19,10 @@ import csv
 import logging
 import sys
 import warnings
-from collections.abc import Sequence
+from contextlib import nullcontext
 from itertools import product
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import httpx
 import pydantic
@@ -33,6 +34,9 @@ from sqlalchemy.orm import Session
 from tqdm import tqdm
 from yarl import URL
 
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+
 logger = logging.getLogger(__name__)
 
 STARPORT_DATA = [
@@ -40,27 +44,33 @@ STARPORT_DATA = [
     {
         "value": "A",
         "name": "Class A",
-        "description": "Excellent quality installation. Refined fuel available. Annual maintenance overhaul available. Shipyard capable of constructing starships and non-starships present. Naval base and/or scout base may be present.",
+        "description": "Excellent quality installation. Refined fuel available. Annual maintenance overhaul available. "
+        "Shipyard capable of constructing starships and non-starships present. Naval base and/or scout base may be "
+        "present.",
     },
     {
         "value": "B",
         "name": "Class B",
-        "description": "Good quality installation. Refined fuel available. Annual maintenance overhaul available. Shipyard capable of constructing non-starships present. Naval base and/or scout base may be present.",
+        "description": "Good quality installation. Refined fuel available. Annual maintenance overhaul available. "
+        "Shipyard capable of constructing non-starships present. Naval base and/or scout base may be present.",
     },
     {
         "value": "C",
         "name": "Class C",
-        "description": "Routine quality installation. Only unrefined fuel available. Reasonable repair facilities present. Scout base may be present.",
+        "description": "Routine quality installation. Only unrefined fuel available. Reasonable repair facilities "
+        "present. Scout base may be present.",
     },
     {
         "value": "D",
         "name": "Class D",
-        "description": "Poor quality installation. Only unrefined fuel available. No repair or shipyard facilities present. Scout base may be present.",
+        "description": "Poor quality installation. Only unrefined fuel available. No repair or shipyard facilities "
+        "present. Scout base may be present.",
     },
     {
         "value": "E",
         "name": "Class E",
-        "description": "Frontier Installation. Essentially a marked spot of bedrock with no fuel, facilities, or bases present.",
+        "description": "Frontier Installation. Essentially a marked spot of bedrock with no fuel, facilities, or bases "
+        "present.",
     },
     {"value": "X", "name": "Class X", "description": "No starport. No provision is made for any ship landings."},
     {
@@ -273,14 +283,14 @@ def main() -> None:
     args.output_location.mkdir(parents=True, exist_ok=True)
     if args.populate_database:
         args.database_location.unlink(missing_ok=True)
-        engine: sqlalchemy.Engine = sqlalchemy.create_engine(f"sqlite+pysqlite:///{args.database_location}")
+        engine: sqlalchemy.Engine | None = sqlalchemy.create_engine(f"sqlite+pysqlite:///{args.database_location}")
         init_database(engine)
     else:
         engine = None
 
     with (
         httpx.Client(timeout=30, transport=httpx.HTTPTransport(retries=5)) as client,
-        Session(engine) if engine else None as session,
+        Session(engine) if engine else nullcontext() as session,
     ):
         sectors = get_sectors(client, args.output_location, args.travellermap_url)
 
@@ -296,7 +306,7 @@ def main() -> None:
                 for style, scale in product(["poster", "atlas", "fasa"], [64, 128]):
                     dl_poster(client, sector, sector_dir, args.travellermap_url, style, scale)
 
-            if args.populate_database:
+            if args.populate_database and session:
                 populate_database(decorated_sector, sector_dir, session)
 
 
@@ -329,8 +339,8 @@ def download_json(client: httpx.Client, sector: ApiSector, sector_dir: Path, tra
     response_json = response.json()
     try:
         return ApiSector.model_validate(dict(response_json, Milieu=sector.milieu))
-    except pydantic.ValidationError:
-        logger.error("ValidationError", extra=dict(response_json))
+    except pydantic.ValidationError as e:
+        logger.exception("ValidationError", extra=dict(response_json), exc_info=e)
         raise
 
 
@@ -499,7 +509,10 @@ class Subsector(Base):
     worlds = sqlalchemy.orm.relationship("World", back_populates="subsector", cascade="all, delete-orphan")
 
     def __repr__(self) -> str:
-        return f"<Subsector(name='{self.name}', sector='{self.sector.name}', x={self.x_coordinate}, y={self.y_coordinate}, milieu='{self.milieu.name}')>"
+        return (
+            f"<Subsector(name='{self.name}', sector='{self.sector.name}', x={self.x_coordinate}, "
+            f"y={self.y_coordinate}, milieu='{self.milieu.name}')>"
+        )
 
 
 class World(Base):
@@ -556,7 +569,10 @@ class World(Base):
 
     @property
     def uwp(self) -> str:
-        return f"{self.starport.value}{self.size.value}{self.atmosphere.value}{self.hydrosphere.value}{self.population.value}{self.government.value}{self.law_level.value}-{self.tech_level.value}"
+        return (
+            f"{self.starport.value}{self.size.value}{self.atmosphere.value}{self.hydrosphere.value}"
+            f"{self.population.value}{self.government.value}{self.law_level.value}-{self.tech_level.value}"
+        )
 
     def __repr__(self) -> str:
         return (
@@ -684,7 +700,7 @@ def init_database(engine: sqlalchemy.Engine) -> None:
         session.commit()
 
 
-def populate_database(sector: ApiSector, sector_dir: Path, session: Session):
+def populate_database(sector: ApiSector, sector_dir: Path, session: Session) -> None:
     db_milieu = session.query(Milieu).filter_by(name=sector.milieu).first()
     if not db_milieu:
         db_milieu = Milieu(name=sector.milieu)
@@ -694,7 +710,7 @@ def populate_database(sector: ApiSector, sector_dir: Path, session: Session):
     session.add(db_sector)
 
     db_subsectors: dict[str, Subsector] = {}
-    for subsector in sector.subsectors:
+    for subsector in sector.subsectors if sector.subsectors else []:
         db_subsector = Subsector(sector=db_sector, name=subsector.name, index=subsector.index)
         db_subsectors[subsector.index] = db_subsector
     session.add_all(db_subsectors.values())
@@ -707,7 +723,6 @@ def populate_database(sector: ApiSector, sector_dir: Path, session: Session):
             starport, size, atmosphere, hydrosphere, population, government, law_level, _, tech_level, *_ = list(
                 row["UWP"]
             )
-            # logger.debug("world data", extra=locals())
 
             try:
                 world = World(
@@ -726,8 +741,8 @@ def populate_database(sector: ApiSector, sector_dir: Path, session: Session):
                     bases=row["Bases"],
                 )
                 session.add(world)
-            except (NoResultFound, KeyError):
-                logger.error("Exception for world data", extra=locals())
+            except (NoResultFound, KeyError) as e:
+                logger.exception("Exception for world data", extra=locals(), exc_info=e)
                 raise
 
     session.commit()
@@ -779,9 +794,9 @@ def create_parser() -> argparse.ArgumentParser:
 
 def init_logging(
     verbosity: int,
-    handler=None,
+    handler: logging.Handler | None = None,
     silence_packages: Sequence[str] = (),
-):
+) -> None:
     handler = handler or logging.StreamHandler(stream=sys.stdout)
     level = LOG_LEVELS[min(verbosity, len(LOG_LEVELS) - 1)]
     msg_format = "%(message)s"
