@@ -28,9 +28,12 @@ import pydantic
 import sqlalchemy
 from pythonjsonlogger.json import JsonFormatter
 from sqlalchemy import UniqueConstraint
+from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import Session
 from tqdm import tqdm
 from yarl import URL
+
+logger = logging.getLogger(__name__)
 
 STARPORT_DATA = [
     {"value": "?", "name": "Unknown", "description": "Unknown"},
@@ -73,6 +76,7 @@ STARPORT_DATA = [
     {"value": "H", "name": "Spaceport Class H", "description": "Primitive Quality. No repairs or fuel available."},
     {"value": "Y", "name": "None", "description": "None."},
 ]
+
 SIZE_DATA = [
     {"value": "?", "description": "Unknown"},
     {"value": "0", "description": "Asteroid/Planetoid Belt."},
@@ -92,93 +96,110 @@ SIZE_DATA = [
     {"value": "E", "description": "14000 miles (22400 km)."},
     {"value": "F", "description": "15000 miles (24000 km)."},
 ]
+
 ATMOSPHERE_DATA = [
     {"value": "?", "description": "Unknown"},
     {"value": "0", "description": "No atmosphere."},
-    {"value": "1", "description": "Trace"},
+    {"value": "1", "description": "Trace."},
     {"value": "2", "description": "Very thin, tainted."},
     {"value": "3", "description": "Very thin."},
-    {"value": "4", "description": ""},
-    {"value": "5", "description": ""},
-    {"value": "6", "description": ""},
-    {"value": "7", "description": ""},
-    {"value": "8", "description": ""},
-    {"value": "9", "description": ""},
-    {"value": "A", "description": ""},
-    {"value": "B", "description": ""},
-    {"value": "C", "description": ""},
-    {"value": "D", "description": ""},
-    {"value": "E", "description": ""},
-    {"value": "F", "description": ""},
+    {"value": "4", "description": "Thin, tainted."},
+    {"value": "5", "description": "Thin."},
+    {"value": "6", "description": "Standard."},
+    {"value": "7", "description": "Standard, tainted."},
+    {"value": "8", "description": "Dense."},
+    {"value": "9", "description": "Dense, tainted."},
+    {"value": "A", "description": "Exotic."},
+    {"value": "B", "description": "Corrosive."},
+    {"value": "C", "description": "Insidious."},
+    {"value": "D", "description": "Dense, high."},
+    {"value": "E", "description": "Ellipsoid."},
+    {"value": "F", "description": "Thin, low."},
 ]
+
 HYDROSPHERE_DATA = [
     {"value": "?", "description": "Unknown"},
-    {"value": "0", "description": ""},
-    {"value": "1", "description": ""},
-    {"value": "2", "description": ""},
-    {"value": "3", "description": ""},
-    {"value": "4", "description": ""},
-    {"value": "5", "description": ""},
-    {"value": "6", "description": ""},
-    {"value": "7", "description": ""},
-    {"value": "8", "description": ""},
-    {"value": "9", "description": ""},
-    {"value": "A", "description": ""},
+    {"value": "0", "description": "No water."},
+    {"value": "1", "description": "10% or less water."},
+    {"value": "2", "description": "11-20% water."},
+    {"value": "3", "description": "21-30% water."},
+    {"value": "4", "description": "31-40% water."},
+    {"value": "5", "description": "41-50% water."},
+    {"value": "6", "description": "51-60% water."},
+    {"value": "7", "description": "61-70% water."},
+    {"value": "8", "description": "71-80% water."},
+    {"value": "9", "description": "81-90% water."},
+    {"value": "A", "description": "91-100% water."},
 ]
+
 GOVERNMENT_DATA = [
-    {"value": "?", "description": "Unknown"},
-    {"value": "0", "description": ""},
-    {"value": "1", "description": ""},
-    {"value": "2", "description": ""},
-    {"value": "3", "description": ""},
-    {"value": "4", "description": ""},
-    {"value": "5", "description": ""},
-    {"value": "6", "description": ""},
-    {"value": "7", "description": ""},
-    {"value": "8", "description": ""},
-    {"value": "9", "description": ""},
-    {"value": "A", "description": ""},
-    {"value": "B", "description": ""},
-    {"value": "C", "description": ""},
-    {"value": "D", "description": ""},
-    {"value": "E", "description": ""},
-    {"value": "F", "description": ""},
-    {"value": "M", "description": "Military Dictatorship or Junta."},
-    {"value": "N", "description": ""},
-    {"value": "Q", "description": "Interim Government."},
-    {"value": "S", "description": "Slave World."},
-    {"value": "T", "description": "Technologically Elevated Dictator."},
+    {"value": "?", "description": "Unknown."},
+    {"value": "0", "description": "No Government Structure."},
+    {"value": "1", "description": "Company/Corporation."},
+    {"value": "2", "description": "Participating Democracy."},
+    {"value": "3", "description": "Self-Perpetuating Oligarchy."},
+    {"value": "4", "description": "Representative Democracy."},
+    {"value": "5", "description": "Feudal Technocracy."},
+    {"value": "6", "description": "Captive Government / Colony."},
+    {"value": "7", "description": "Balkanization."},
+    {"value": "8", "description": "Civil Service Bureaucracy."},
+    {"value": "9", "description": "Impersonal Bureaucracy."},
+    {"value": "A", "description": "Charismatic Dictator."},
+    {"value": "B", "description": "Non-Charismatic Dictator."},
+    {"value": "C", "description": "Charismatic Oligarchy."},
+    {"value": "D", "description": "Religious Dictatorship."},
+    {"value": "E", "description": "Religious Autocracy."},
+    {"value": "F", "description": "Totalitarian Oligarchy."},
+    {"value": "G", "description": "Small Station or Facility (Aslan)."},
+    {"value": "H", "description": "Split Clan Control (Aslan)."},
+    {"value": "J", "description": "Single On-world Clan Control (Aslan)."},
+    {"value": "K", "description": "Single Multi-world Clan Control (Aslan)."},
+    {"value": "L", "description": "Major Clan Control (Aslan)."},
+    {"value": "M", "description": "Vassal Clan Control (Aslan) or Military Dictatorship / Junta."},
+    {"value": "N", "description": "Major Vassal Clan Control (Aslan)."},
+    {"value": "P", "description": "Small Station or Facility (K'kree)."},
+    {"value": "Q", "description": "Krurruna or Krumanak Rule for Off-world Steppelord (K'kree) or Interim Government."},
+    {"value": "R", "description": "Steppelord On-world Rule (K'kree)."},
+    {"value": "S", "description": "Sept (Hiver) or Slave World."},
+    {"value": "T", "description": "Unsupervised Anarchy (Hiver) or Technologically Elevated Dictator."},
+    {"value": "U", "description": "Supervised Anarchy (Hiver)."},
     {"value": "V", "description": "Viral Hell."},
+    {"value": "W", "description": "Committee (Hiver)."},
+    {"value": "X", "description": "Droyne Hierarchy (Droyne)."},
+    {"value": "Y", "description": "Unassigned / Undefined."},
+    {"value": "Z", "description": "Unassigned / Undefined."},
 ]
+
 POPULATION_DATA = [
     {"value": "?", "description": "Unknown"},
-    {"value": "0", "description": ""},
-    {"value": "1", "description": ""},
-    {"value": "2", "description": ""},
-    {"value": "3", "description": ""},
-    {"value": "4", "description": ""},
-    {"value": "5", "description": ""},
-    {"value": "6", "description": ""},
-    {"value": "7", "description": ""},
-    {"value": "8", "description": ""},
-    {"value": "9", "description": ""},
-    {"value": "A", "description": ""},
-    {"value": "B", "description": ""},
-    {"value": "C", "description": ""},
+    {"value": "0", "description": "Low population (up to a few dozen)."},
+    {"value": "1", "description": "Tens to hundreds."},
+    {"value": "2", "description": "Hundreds to thousands."},
+    {"value": "3", "description": "Thousands to tens of thousands."},
+    {"value": "4", "description": "Tens of thousands to hundreds of thousands."},
+    {"value": "5", "description": "Hundreds of thousands to millions."},
+    {"value": "6", "description": "Millions to tens of millions."},
+    {"value": "7", "description": "Tens of millions to hundreds of millions."},
+    {"value": "8", "description": "Hundreds of millions to billions."},
+    {"value": "9", "description": "Billions."},
+    {"value": "A", "description": "Tens of billions."},
+    {"value": "B", "description": "Hundreds of billions."},
+    {"value": "C", "description": "Trillions."},
 ]
+
 LAW_LEVEL_DATA = [
     {"value": "?", "description": "Unknown"},
-    {"value": "0", "description": ""},
-    {"value": "1", "description": ""},
-    {"value": "2", "description": ""},
-    {"value": "3", "description": ""},
-    {"value": "4", "description": ""},
-    {"value": "5", "description": ""},
-    {"value": "6", "description": ""},
-    {"value": "7", "description": ""},
-    {"value": "8", "description": ""},
-    {"value": "9", "description": ""},
-    {"value": "A", "description": ""},
+    {"value": "0", "description": "No law."},
+    {"value": "1", "description": "Low law, unrestricted weapons."},
+    {"value": "2", "description": "Some firearm restrictions."},
+    {"value": "3", "description": "Heavy weapon restrictions."},
+    {"value": "4", "description": "Personal concealable weapons banned."},
+    {"value": "5", "description": "No firearms outside home."},
+    {"value": "6", "description": "All firearms banned."},
+    {"value": "7", "description": "All weapons banned."},
+    {"value": "8", "description": "Civilian movement controlled."},
+    {"value": "9", "description": "Extreme social control."},
+    {"value": "A", "description": "Full control of daily life."},
     {"value": "B", "description": ""},
     {"value": "C", "description": ""},
     {"value": "D", "description": ""},
@@ -189,26 +210,55 @@ LAW_LEVEL_DATA = [
     {"value": "I", "description": ""},
     {"value": "J", "description": ""},
 ]
+
 TECH_LEVEL_DATA = [
-    {"value": "?", "name": "", "description": "Unknown"},
-    {"value": "0", "name": "", "description": ""},
-    {"value": "1", "name": "", "description": ""},
-    {"value": "2", "name": "", "description": ""},
-    {"value": "3", "name": "", "description": ""},
-    {"value": "4", "name": "", "description": ""},
-    {"value": "5", "name": "", "description": ""},
-    {"value": "6", "name": "", "description": ""},
-    {"value": "7", "name": "", "description": ""},
-    {"value": "8", "name": "", "description": ""},
-    {"value": "9", "name": "", "description": ""},
-    {"value": "A", "name": "", "description": ""},
-    {"value": "B", "name": "", "description": ""},
-    {"value": "C", "name": "", "description": ""},
-    {"value": "D", "name": "", "description": ""},
-    {"value": "E", "name": "", "description": ""},
-    {"value": "F", "name": "", "description": ""},
-    {"value": "G", "name": "", "description": ""},
-    {"value": "H", "name": "", "description": ""},
+    {"value": "?", "name": "Unknown", "description": "Unknown technology level."},
+    {"value": "0", "name": "Stone Age", "description": "Pre-industrial, no technology."},
+    {"value": "1", "name": "Bronze/Iron Age", "description": "Basic metallurgy, sailing ships."},
+    {"value": "2", "name": "Renaissance", "description": "Gunpowder, printing, early scientific development."},
+    {"value": "3", "name": "Industrial Revolution", "description": "Steam power, railroads, simple factories."},
+    {"value": "4", "name": "Late Industrial Age", "description": "Combustion engines, radio, aircraft."},
+    {"value": "5", "name": "Early Space Age", "description": "Basic computers, early rockets, satellites."},
+    {"value": "6", "name": "Fusion Age", "description": "Nuclear power, early fusion, advanced electronics."},
+    {"value": "7", "name": "Interplanetary Age", "description": "Basic space travel, colonization of planets."},
+    {"value": "8", "name": "Jump Drive Age", "description": "Basic interstellar travel, jump-1 starships."},
+    {"value": "9", "name": "Expanded Star Travel", "description": "Jump-2 technology, advanced shipbuilding."},
+    {"value": "A", "name": "Interstellar Society", "description": "Jump-3 technology, high automation."},
+    {
+        "value": "B",
+        "name": "Lower Average Imperial.",
+        "description": "Jump-4 technology, significant AI and cybernetics.",
+    },
+    {"value": "C", "name": "Average Imperial", "description": "Jump-5 technology, planetary-scale engineering."},
+    {
+        "value": "D",
+        "name": "Above Average Imperial",
+        "description": "Jump-6 technology, advanced artificial intelligence.",
+    },
+    {
+        "value": "E",
+        "name": "Above Average Imperial",
+        "description": "Highly efficient starships, major genetic engineering.",
+    },
+    {
+        "value": "F",
+        "name": "Technical Imperial Maximum",
+        "description": "Extremely high technology, nearly self-sufficient systems.",
+    },
+    {
+        "value": "G",
+        "name": "Robots",
+        "description": "Near-complete automation, and highly efficient energy generation.",
+    },
+    {
+        "value": "H",
+        "name": "Artificial Intelligence",
+        "description": "Extensive megastructures, and advanced matter manipulation.",
+    },
+    {"value": "I", "name": "Personal Disintegrators", "description": ""},
+    {"value": "J", "name": "", "description": ""},
+    {"value": "K", "name": "Plastic Metals", "description": ""},
+    {"value": "L", "name": "Magic", "description": "Comprehensible only as technological magic."},
 ]
 
 VERSION = "0.1.0"
@@ -276,7 +326,12 @@ def download_json(client: httpx.Client, sector: ApiSector, sector_dir: Path, tra
     with (sector_dir / f"{sector.names[0].text}.json").open("w") as f:
         f.write(response.text)
 
-    return ApiSector.model_validate(dict(response.json(), Milieu=sector.milieu))
+    response_json = response.json()
+    try:
+        return ApiSector.model_validate(dict(response_json, Milieu=sector.milieu))
+    except pydantic.ValidationError:
+        logger.error("ValidationError", extra=dict(response_json))
+        raise
 
 
 def download_tsv(client: httpx.Client, sector: ApiSector, sector_dir: Path, travellermap_url: URL) -> bool:
@@ -335,14 +390,14 @@ class ApiSubsector(pydantic.BaseModel):
 
 
 class ApiAllegiance(pydantic.BaseModel):
-    name: str = pydantic.Field(..., alias="Name")
-    code: str = pydantic.Field(..., alias="Code")
+    name: str | None = pydantic.Field(None, alias="Name")
+    code: str | None = pydantic.Field(None, alias="Code")
     base: str | None = pydantic.Field(None, alias="Base")
 
 
 class ApiBorder(pydantic.BaseModel):
     wrap_label: bool | None = pydantic.Field(None, alias="WrapLabel")
-    allegiance: str = pydantic.Field(..., alias="Allegiance")
+    allegiance: str | None = pydantic.Field(None, alias="Allegiance")
     label_position: str = pydantic.Field(..., alias="LabelPosition")
     path: str = pydantic.Field(..., alias="Path")
     label: str | None = pydantic.Field(None, alias="Label")
@@ -652,30 +707,35 @@ def populate_database(sector: ApiSector, sector_dir: Path, session: Session):
             starport, size, atmosphere, hydrosphere, population, government, law_level, _, tech_level, *_ = list(
                 row["UWP"]
             )
+            # logger.debug("world data", extra=locals())
 
-            world = World(
-                name=row["Name"],
-                subsector=db_subsectors[row["SS"]],
-                hex_location=row["Hex"],
-                starport=session.query(Starport).filter_by(value=starport).one(),
-                size=session.query(Size).filter_by(value=size).one(),
-                atmosphere=session.query(Atmosphere).filter_by(value=atmosphere).one(),
-                hydrosphere=session.query(Hydrosphere).filter_by(value=hydrosphere).one(),
-                population=session.query(Population).filter_by(value=population).one(),
-                government=session.query(Government).filter_by(value=government).one(),
-                law_level=session.query(LawLevel).filter_by(value=law_level).one(),
-                tech_level=session.query(TechLevel).filter_by(value=tech_level).one(),
-                zone=row["Zone"],
-                bases=row["Bases"],
-            )
-            session.add(world)
+            try:
+                world = World(
+                    name=row["Name"],
+                    subsector=db_subsectors[row["SS"]],
+                    hex_location=row["Hex"],
+                    starport=session.query(Starport).filter_by(value=starport).one(),
+                    size=session.query(Size).filter_by(value=size).one(),
+                    atmosphere=session.query(Atmosphere).filter_by(value=atmosphere).one(),
+                    hydrosphere=session.query(Hydrosphere).filter_by(value=hydrosphere).one(),
+                    population=session.query(Population).filter_by(value=population).one(),
+                    government=session.query(Government).filter_by(value=government).one(),
+                    law_level=session.query(LawLevel).filter_by(value=law_level).one(),
+                    tech_level=session.query(TechLevel).filter_by(value=tech_level).one(),
+                    zone=row["Zone"],
+                    bases=row["Bases"],
+                )
+                session.add(world)
+            except (NoResultFound, KeyError):
+                logger.error("Exception for world data", extra=locals())
+                raise
 
     session.commit()
 
 
 def parse_args() -> argparse.Namespace:
     args = create_parser().parse_args()
-    init_logging(args.verbosity, silence_packages=["urllib3", "httpcore"])
+    init_logging(args.verbosity, silence_packages=["urllib3", "httpcore", "httpx"])
 
     return args
 
