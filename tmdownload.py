@@ -25,18 +25,20 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 import httpx
-import pydantic
-import sqlalchemy
+from pydantic import BaseModel, Field, ValidationError
 from pythonjsonlogger.json import JsonFormatter
-from sqlalchemy import UniqueConstraint
-from sqlalchemy.exc import NoResultFound
-from sqlalchemy.orm import Session
+from sqlalchemy import Column, Engine, Float, ForeignKey, Integer, String, UniqueConstraint, create_engine, insert
+from sqlalchemy.exc import IntegrityError, NoResultFound
+from sqlalchemy.orm import DeclarativeBase, Session, relationship
 from tqdm import tqdm
 from yarl import URL
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
+VERSION = "0.1.0"
+
+LOG_LEVELS = [logging.ERROR, logging.WARNING, logging.INFO, logging.DEBUG]
 logger = logging.getLogger(__name__)
 
 STARPORT_DATA = [
@@ -271,11 +273,6 @@ TECH_LEVEL_DATA = [
     {"value": "L", "name": "Magic", "description": "Comprehensible only as technological magic."},
 ]
 
-VERSION = "0.1.0"
-
-LOG_LEVELS = [logging.ERROR, logging.WARNING, logging.INFO, logging.DEBUG]
-logger = logging.getLogger(__name__)
-
 
 def main() -> None:
     args = parse_args()
@@ -283,7 +280,7 @@ def main() -> None:
     args.output_location.mkdir(parents=True, exist_ok=True)
     if args.populate_database:
         args.database_location.unlink(missing_ok=True)
-        engine: sqlalchemy.Engine | None = sqlalchemy.create_engine(f"sqlite+pysqlite:///{args.database_location}")
+        engine: Engine | None = create_engine(f"sqlite+pysqlite:///{args.database_location}")
         init_database(engine)
     else:
         engine = None
@@ -339,7 +336,7 @@ def download_json(client: httpx.Client, sector: ApiSector, sector_dir: Path, tra
     response_json = response.json()
     try:
         return ApiSector.model_validate(dict(response_json, Milieu=sector.milieu))
-    except pydantic.ValidationError as e:
+    except ValidationError as e:
         logger.exception("ValidationError", extra=dict(response_json), exc_info=e)
         raise
 
@@ -375,93 +372,91 @@ def dl_poster(
             f.write(response.content)
 
 
-class ApiName(pydantic.BaseModel):
-    text: str = pydantic.Field(..., alias="Text")
-    lang: str | None = pydantic.Field(None, alias="Lang")
-    source: str | None = pydantic.Field(None, alias="Source")
+class ApiName(BaseModel):
+    text: str = Field(..., alias="Text")
+    lang: str | None = Field(None, alias="Lang")
+    source: str | None = Field(None, alias="Source")
 
 
-class ApiProduct(pydantic.BaseModel):
-    author: str | None = pydantic.Field(None, alias="Author")
-    title: str | None = pydantic.Field(None, alias="Title")
-    publisher: str | None = pydantic.Field(None, alias="Publisher")
-    ref: str | None = pydantic.Field(None, alias="Ref")
+class ApiProduct(BaseModel):
+    author: str | None = Field(None, alias="Author")
+    title: str | None = Field(None, alias="Title")
+    publisher: str | None = Field(None, alias="Publisher")
+    ref: str | None = Field(None, alias="Ref")
 
 
-class ApiDataFile(pydantic.BaseModel):
-    source: str | None = pydantic.Field(None, alias="Source")
-    milieu: str | None = pydantic.Field(None, alias="Milieu")
+class ApiDataFile(BaseModel):
+    source: str | None = Field(None, alias="Source")
+    milieu: str | None = Field(None, alias="Milieu")
 
 
-class ApiSubsector(pydantic.BaseModel):
-    name: str = pydantic.Field(..., alias="Name")
-    index: str = pydantic.Field(..., alias="Index")
-    index_number: int = pydantic.Field(..., alias="IndexNumber")
+class ApiSubsector(BaseModel):
+    name: str = Field(..., alias="Name")
+    index: str = Field(..., alias="Index")
+    index_number: int = Field(..., alias="IndexNumber")
 
 
-class ApiAllegiance(pydantic.BaseModel):
-    name: str | None = pydantic.Field(None, alias="Name")
-    code: str | None = pydantic.Field(None, alias="Code")
-    base: str | None = pydantic.Field(None, alias="Base")
+class ApiAllegiance(BaseModel):
+    name: str | None = Field(None, alias="Name")
+    code: str | None = Field(None, alias="Code")
+    base: str | None = Field(None, alias="Base")
 
 
-class ApiBorder(pydantic.BaseModel):
-    wrap_label: bool | None = pydantic.Field(None, alias="WrapLabel")
-    allegiance: str | None = pydantic.Field(None, alias="Allegiance")
-    label_position: str = pydantic.Field(..., alias="LabelPosition")
-    path: str = pydantic.Field(..., alias="Path")
-    label: str | None = pydantic.Field(None, alias="Label")
-    show_label: bool | None = pydantic.Field(None, alias="ShowLabel")
+class ApiBorder(BaseModel):
+    wrap_label: bool | None = Field(None, alias="WrapLabel")
+    allegiance: str | None = Field(None, alias="Allegiance")
+    label_position: str = Field(..., alias="LabelPosition")
+    path: str = Field(..., alias="Path")
+    label: str | None = Field(None, alias="Label")
+    show_label: bool | None = Field(None, alias="ShowLabel")
 
 
-class ApiRoute(pydantic.BaseModel):
-    start: str = pydantic.Field(..., alias="Start")
-    end: str = pydantic.Field(..., alias="End")
-    end_offset_x: int | None = pydantic.Field(None, alias="EndOffsetX")
-    allegiance: str | None = pydantic.Field(None, alias="Allegiance")
-    end_offset_y: int | None = pydantic.Field(None, alias="EndOffsetY")
-    start_offset_x: int | None = pydantic.Field(None, alias="StartOffsetX")
+class ApiRoute(BaseModel):
+    start: str = Field(..., alias="Start")
+    end: str = Field(..., alias="End")
+    end_offset_x: int | None = Field(None, alias="EndOffsetX")
+    allegiance: str | None = Field(None, alias="Allegiance")
+    end_offset_y: int | None = Field(None, alias="EndOffsetY")
+    start_offset_x: int | None = Field(None, alias="StartOffsetX")
 
 
-class ApiSector(pydantic.BaseModel):
-    x: int = pydantic.Field(..., alias="X")
-    y: int = pydantic.Field(..., alias="Y")
-    milieu: str | None = pydantic.Field(None, alias="Milieu")
-    abbreviation: str | None = pydantic.Field(None, alias="Abbreviation")
-    tags: str = pydantic.Field(..., alias="Tags")
-    names: list[ApiName] = pydantic.Field(..., alias="Names")
+class ApiSector(BaseModel):
+    x: int = Field(..., alias="X")
+    y: int = Field(..., alias="Y")
+    milieu: str | None = Field(None, alias="Milieu")
+    abbreviation: str | None = Field(None, alias="Abbreviation")
+    tags: str = Field(..., alias="Tags")
+    names: list[ApiName] = Field(..., alias="Names")
 
-    credits: list | None = pydantic.Field(None, alias="Credits")
-    products: list[ApiProduct] | None = pydantic.Field(None, alias="Products")
-    data_file: ApiDataFile | None = pydantic.Field(None, alias="DataFile")
-    subsectors: list[ApiSubsector] | None = pydantic.Field(None, alias="Subsectors")
-    allegiances: list[ApiAllegiance] | None = pydantic.Field(None, alias="Allegiances")
-    stylesheet: str | None = pydantic.Field(None, alias="Stylesheet")
-    labels: list | None = pydantic.Field(None, alias="Labels")
-    borders: list[ApiBorder] | None = pydantic.Field(None, alias="Borders")
-    regions: list | None = pydantic.Field(None, alias="Regions")
-    routes: list[ApiRoute] | None = pydantic.Field(None, alias="Routes")
-
-
-class ApiModel(pydantic.BaseModel):
-    sectors: list[ApiSector] = pydantic.Field(..., alias="Sectors")
+    credits: list | None = Field(None, alias="Credits")
+    products: list[ApiProduct] | None = Field(None, alias="Products")
+    data_file: ApiDataFile | None = Field(None, alias="DataFile")
+    subsectors: list[ApiSubsector] | None = Field(None, alias="Subsectors")
+    allegiances: list[ApiAllegiance] | None = Field(None, alias="Allegiances")
+    stylesheet: str | None = Field(None, alias="Stylesheet")
+    labels: list | None = Field(None, alias="Labels")
+    borders: list[ApiBorder] | None = Field(None, alias="Borders")
+    regions: list | None = Field(None, alias="Regions")
+    routes: list[ApiRoute] | None = Field(None, alias="Routes")
 
 
-class Base(sqlalchemy.orm.DeclarativeBase):
+class ApiModel(BaseModel):
+    sectors: list[ApiSector] = Field(..., alias="Sectors")
+
+
+class Base(DeclarativeBase):
     pass
 
 
 class Milieu(Base):
     __tablename__ = "milieus"
 
-    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
-    name = sqlalchemy.Column(
-        sqlalchemy.String, nullable=False, unique=True
-    )  # Milieu identifier (e.g., "M1105", "M1120")
-    description = sqlalchemy.Column(sqlalchemy.String, nullable=True)  # Additional information about the milieu
+    id = Column(Integer, primary_key=True)
+    name = Column(String, nullable=False, unique=True)  # Milieu identifier (e.g., "M1105", "M1120")
+    description = Column(String, nullable=True)  # Additional information about the milieu
 
     # Relationships to other tables
-    sector_data = sqlalchemy.orm.relationship("Sector", back_populates="milieu")
+    sector_data = relationship("Sector", back_populates="milieu")
 
     def __repr__(self) -> str:
         return f"<Milieu(name='{self.name}', description='{self.description}')>"
@@ -470,21 +465,19 @@ class Milieu(Base):
 class Sector(Base):
     __tablename__ = "sectors"
 
-    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
-    name = sqlalchemy.Column(sqlalchemy.String, nullable=False)
-    x_coordinate = sqlalchemy.Column(sqlalchemy.Float, nullable=False)  # X-coordinate in galaxy
-    y_coordinate = sqlalchemy.Column(sqlalchemy.Float, nullable=False)  # Y-coordinate in galaxy
-    milieu_id = sqlalchemy.Column(
-        sqlalchemy.Integer, sqlalchemy.ForeignKey("milieus.id"), nullable=False
-    )  # Milieu foreign key
+    id = Column(Integer, primary_key=True)
+    name = Column(String, nullable=False)
+    x_coordinate = Column(Float, nullable=False)  # X-coordinate in galaxy
+    y_coordinate = Column(Float, nullable=False)  # Y-coordinate in galaxy
+    milieu_id = Column(Integer, ForeignKey("milieus.id"), nullable=False)  # Milieu foreign key
 
     UniqueConstraint("name", "milieu_id")
 
     # Relationship to subsectors
-    subsectors = sqlalchemy.orm.relationship("Subsector", back_populates="sector", cascade="all, delete-orphan")
+    subsectors = relationship("Subsector", back_populates="sector", cascade="all, delete-orphan")
 
     # Relationship to milieu
-    milieu = sqlalchemy.orm.relationship("Milieu", back_populates="sector_data")
+    milieu = relationship("Milieu", back_populates="sector_data")
 
     def __repr__(self) -> str:
         return (
@@ -495,77 +488,59 @@ class Sector(Base):
 class Subsector(Base):
     __tablename__ = "subsectors"
 
-    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
-    name = sqlalchemy.Column(sqlalchemy.String, nullable=False)
-    index = sqlalchemy.Column(sqlalchemy.String, nullable=False)
-    sector_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("sectors.id"), nullable=False)
+    id = Column(Integer, primary_key=True)
+    name = Column(String, nullable=False)
+    index = Column(String, nullable=False)
+    sector_id = Column(Integer, ForeignKey("sectors.id"), nullable=False)
 
     UniqueConstraint("name", "sector_id")
 
     # Relationship to sector
-    sector = sqlalchemy.orm.relationship("Sector", back_populates="subsectors")
+    sector = relationship("Sector", back_populates="subsectors")
 
     # Relationship to worlds
-    worlds = sqlalchemy.orm.relationship("World", back_populates="subsector", cascade="all, delete-orphan")
+    worlds = relationship("World", back_populates="subsector", cascade="all, delete-orphan")
 
     def __repr__(self) -> str:
         return (
-            f"<Subsector(name='{self.name}', sector='{self.sector.name}', x={self.x_coordinate}, "
-            f"y={self.y_coordinate}, milieu='{self.milieu.name}')>"
+            f"<Subsector(name='{self.name}', sector='{self.sector.name}', index={self.index}, "
+            f"milieu='{self.sector.milieu.name}')>"
         )
 
 
 class World(Base):
     __tablename__ = "worlds"
 
-    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
-    name = sqlalchemy.Column(sqlalchemy.String, nullable=False)
-    subsector_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("subsectors.id"), nullable=False)
-    hex_location = sqlalchemy.Column(
-        sqlalchemy.String, nullable=False
-    )  # Hex location within the subsector (e.g., "0203")
-    population_id = sqlalchemy.Column(
-        sqlalchemy.Integer, sqlalchemy.ForeignKey("populations.id"), nullable=False
-    )  # Population (can be null if unknown)
-    tech_level_id = sqlalchemy.Column(
-        sqlalchemy.Integer, sqlalchemy.ForeignKey("tech_levels.id"), nullable=False
-    )  # TechLevel foreign key
-    starport_id = sqlalchemy.Column(
-        sqlalchemy.Integer, sqlalchemy.ForeignKey("starports.id"), nullable=False
-    )  # Starport foreign key
-    size_id = sqlalchemy.Column(
-        sqlalchemy.Integer, sqlalchemy.ForeignKey("sizes.id"), nullable=False
-    )  # World size foreign key
-    atmosphere_id = sqlalchemy.Column(
-        sqlalchemy.Integer, sqlalchemy.ForeignKey("atmospheres.id"), nullable=False
-    )  # Atmosphere foreign key
-    hydrosphere_id = sqlalchemy.Column(
-        sqlalchemy.Integer, sqlalchemy.ForeignKey("hydrospheres.id"), nullable=False
-    )  # Hydrosphere foreign key
-    government_id = sqlalchemy.Column(
-        sqlalchemy.Integer, sqlalchemy.ForeignKey("governments.id"), nullable=False
-    )  # Government type foreign key
-    law_level_id = sqlalchemy.Column(
-        sqlalchemy.Integer, sqlalchemy.ForeignKey("law_levels.id"), nullable=False
-    )  # Law level foreign key
-    trade_codes = sqlalchemy.Column(sqlalchemy.String, nullable=True)  # Trade codes as a comma-separated string
-    zone = sqlalchemy.Column(sqlalchemy.String, nullable=False)
-    bases = sqlalchemy.Column(sqlalchemy.String, nullable=False)
+    id = Column(Integer, primary_key=True)
+    name = Column(String, nullable=False)
+    subsector_id = Column(Integer, ForeignKey("subsectors.id"), nullable=False)
+    hex_location = Column(String, nullable=False)  # Hex location within the subsector (e.g., "0203")
+    population_id = Column(Integer, ForeignKey("populations.id"), nullable=False)  # Population (can be null if unknown)
+    tech_level_id = Column(Integer, ForeignKey("tech_levels.id"), nullable=False)  # TechLevel foreign key
+    starport_id = Column(Integer, ForeignKey("starports.id"), nullable=False)  # Starport foreign key
+    size_id = Column(Integer, ForeignKey("sizes.id"), nullable=False)  # World size foreign key
+    atmosphere_id = Column(Integer, ForeignKey("atmospheres.id"), nullable=False)  # Atmosphere foreign key
+    hydrosphere_id = Column(Integer, ForeignKey("hydrospheres.id"), nullable=False)  # Hydrosphere foreign key
+    government_id = Column(Integer, ForeignKey("governments.id"), nullable=False)  # Government type foreign key
+    law_level_id = Column(Integer, ForeignKey("law_levels.id"), nullable=False)  # Law level foreign key
+    trade_codes = Column(String, nullable=True)  # Trade codes as a comma-separated string
+    zone = Column(String, nullable=False)
+    bases = Column(String, nullable=False)
 
     UniqueConstraint("hex_location", "subsector_id")
 
     # Relationship to subsector
-    subsector = sqlalchemy.orm.relationship("Subsector", back_populates="worlds")
+    subsector = relationship("Subsector", back_populates="worlds")
 
     # Relationships to reference tables
-    starport = sqlalchemy.orm.relationship("Starport")
-    size = sqlalchemy.orm.relationship("Size")
-    atmosphere = sqlalchemy.orm.relationship("Atmosphere")
-    hydrosphere = sqlalchemy.orm.relationship("Hydrosphere")
-    population = sqlalchemy.orm.relationship("Population")
-    government = sqlalchemy.orm.relationship("Government")
-    law_level = sqlalchemy.orm.relationship("LawLevel")
-    tech_level = sqlalchemy.orm.relationship("TechLevel")
+    starport = relationship("Starport")
+    size = relationship("Size")
+    atmosphere = relationship("Atmosphere")
+    hydrosphere = relationship("Hydrosphere")
+    population = relationship("Population")
+    government = relationship("Government")
+    law_level = relationship("LawLevel")
+    tech_level = relationship("TechLevel")
 
     @property
     def uwp(self) -> str:
@@ -598,10 +573,10 @@ class Starport(Base):
 
     __tablename__ = "starports"
 
-    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
-    value = sqlalchemy.Column(sqlalchemy.String, nullable=False, unique=True)
-    name = sqlalchemy.Column(sqlalchemy.String, nullable=False)
-    description = sqlalchemy.Column(sqlalchemy.String, nullable=True)
+    id = Column(Integer, primary_key=True)
+    value = Column(String, nullable=False, unique=True)
+    name = Column(String, nullable=False)
+    description = Column(String, nullable=True)
 
     def __repr__(self) -> str:
         return f"<Starport(value='{self.value}', name='{self.name}', description='{self.description}')>"
@@ -610,9 +585,9 @@ class Starport(Base):
 class Size(Base):
     __tablename__ = "sizes"
 
-    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
-    value = sqlalchemy.Column(sqlalchemy.String, nullable=False, unique=True)
-    description = sqlalchemy.Column(sqlalchemy.String, nullable=True)
+    id = Column(Integer, primary_key=True)
+    value = Column(String, nullable=False, unique=True)
+    description = Column(String, nullable=True)
 
     def __repr__(self) -> str:
         return f"<Size(value='{self.value}', description='{self.description}')>"
@@ -621,9 +596,9 @@ class Size(Base):
 class Atmosphere(Base):
     __tablename__ = "atmospheres"
 
-    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
-    value = sqlalchemy.Column(sqlalchemy.String, nullable=False, unique=True)
-    description = sqlalchemy.Column(sqlalchemy.String, nullable=True)
+    id = Column(Integer, primary_key=True)
+    value = Column(String, nullable=False, unique=True)
+    description = Column(String, nullable=True)
 
     def __repr__(self) -> str:
         return f"<Atmosphere(value='{self.value}', description='{self.description}')>"
@@ -632,9 +607,9 @@ class Atmosphere(Base):
 class Hydrosphere(Base):
     __tablename__ = "hydrospheres"
 
-    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
-    value = sqlalchemy.Column(sqlalchemy.String, nullable=False, unique=True)
-    description = sqlalchemy.Column(sqlalchemy.String, nullable=True)
+    id = Column(Integer, primary_key=True)
+    value = Column(String, nullable=False, unique=True)
+    description = Column(String, nullable=True)
 
     def __repr__(self) -> str:
         return f"<Hydrosphere(value='{self.value}', description='{self.description}')>"
@@ -643,9 +618,9 @@ class Hydrosphere(Base):
 class Government(Base):
     __tablename__ = "governments"
 
-    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
-    value = sqlalchemy.Column(sqlalchemy.String, nullable=False, unique=True)
-    description = sqlalchemy.Column(sqlalchemy.String, nullable=True)
+    id = Column(Integer, primary_key=True)
+    value = Column(String, nullable=False, unique=True)
+    description = Column(String, nullable=True)
 
     def __repr__(self) -> str:
         return f"<Government(value='{self.value}', description='{self.description}')>"
@@ -654,9 +629,9 @@ class Government(Base):
 class LawLevel(Base):
     __tablename__ = "law_levels"
 
-    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
-    value = sqlalchemy.Column(sqlalchemy.String, nullable=False, unique=True)
-    description = sqlalchemy.Column(sqlalchemy.String, nullable=True)
+    id = Column(Integer, primary_key=True)
+    value = Column(String, nullable=False, unique=True)
+    description = Column(String, nullable=True)
 
     def __repr__(self) -> str:
         return f"<LawLevel(value='{self.value}', description='{self.description}')>"
@@ -665,9 +640,9 @@ class LawLevel(Base):
 class Population(Base):
     __tablename__ = "populations"
 
-    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
-    value = sqlalchemy.Column(sqlalchemy.String, nullable=False, unique=True)
-    description = sqlalchemy.Column(sqlalchemy.String, nullable=True)
+    id = Column(Integer, primary_key=True)
+    value = Column(String, nullable=False, unique=True)
+    description = Column(String, nullable=True)
 
     def __repr__(self) -> str:
         return f"<Population(value='{self.value}', description='{self.description}')>"
@@ -676,26 +651,26 @@ class Population(Base):
 class TechLevel(Base):
     __tablename__ = "tech_levels"
 
-    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
-    value = sqlalchemy.Column(sqlalchemy.String, nullable=False, unique=True)
-    name = sqlalchemy.Column(sqlalchemy.String, nullable=False)
-    description = sqlalchemy.Column(sqlalchemy.String, nullable=True)
+    id = Column(Integer, primary_key=True)
+    value = Column(String, nullable=False, unique=True)
+    name = Column(String, nullable=False)
+    description = Column(String, nullable=True)
 
     def __repr__(self) -> str:
         return f"<TechLevel(value='{self.value}', name='{self.name}', description='{self.description}')>"
 
 
-def init_database(engine: sqlalchemy.Engine) -> None:
+def init_database(engine: Engine) -> None:
     Base.metadata.create_all(engine)
     with Session(engine) as session:
-        session.execute(sqlalchemy.insert(Starport), STARPORT_DATA)
-        session.execute(sqlalchemy.insert(Size), SIZE_DATA)
-        session.execute(sqlalchemy.insert(Atmosphere), ATMOSPHERE_DATA)
-        session.execute(sqlalchemy.insert(Hydrosphere), HYDROSPHERE_DATA)
-        session.execute(sqlalchemy.insert(Government), GOVERNMENT_DATA)
-        session.execute(sqlalchemy.insert(Population), POPULATION_DATA)
-        session.execute(sqlalchemy.insert(LawLevel), LAW_LEVEL_DATA)
-        session.execute(sqlalchemy.insert(TechLevel), TECH_LEVEL_DATA)
+        session.execute(insert(Starport), STARPORT_DATA)
+        session.execute(insert(Size), SIZE_DATA)
+        session.execute(insert(Atmosphere), ATMOSPHERE_DATA)
+        session.execute(insert(Hydrosphere), HYDROSPHERE_DATA)
+        session.execute(insert(Government), GOVERNMENT_DATA)
+        session.execute(insert(Population), POPULATION_DATA)
+        session.execute(insert(LawLevel), LAW_LEVEL_DATA)
+        session.execute(insert(TechLevel), TECH_LEVEL_DATA)
 
         session.commit()
 
@@ -714,6 +689,7 @@ def populate_database(sector: ApiSector, sector_dir: Path, session: Session) -> 
         db_subsector = Subsector(sector=db_sector, name=subsector.name, index=subsector.index)
         db_subsectors[subsector.index] = db_subsector
     session.add_all(db_subsectors.values())
+    session.commit()
 
     with (sector_dir / f"{sector.names[0].text}.tsv").open("r") as f:
         reader = csv.DictReader(f, delimiter="\t")
@@ -741,11 +717,11 @@ def populate_database(sector: ApiSector, sector_dir: Path, session: Session) -> 
                     bases=row["Bases"],
                 )
                 session.add(world)
-            except (NoResultFound, KeyError) as e:
-                logger.exception("Exception for world data", extra=locals(), exc_info=e)
-                raise
-
-    session.commit()
+            except (NoResultFound, IntegrityError, KeyError) as e:
+                logger.warning("Exception for world - skipped", extra=locals(), exc_info=e)
+                session.rollback()
+            else:
+                session.commit()
 
 
 def parse_args() -> argparse.Namespace:

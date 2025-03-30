@@ -4,33 +4,41 @@ See [The Traveller Map API](https://travellermap.com/doc/api).
 
 ## Tasks
 
-### run
+### download-all
+
+Download posters and create database
 
 ```sh
 uv run tmdownload.py -vv
 ```
 
-### run-poster
+### download-poster
+
+Download posters
 
 ```sh
-uv run tmdownload.py -p
+uv run tmdownload.py -p -vv
 ```
 
-### run-db
+### create-db
+
+Create database
 
 ```sh
-uv run tmdownload.py -d
+uv run tmdownload.py -d -vv
 ```
 
 ### explore-db
 
+Explore database
+
 ```sh
-uv run --with datasette datasette out/travellermap.db
+uv run --with datasette datasette out/travellermap.db -o
 ```
 
 ### format
 
-Formatting & linting
+Fix formatting etc.
 
 ```sh
 uv run --with ruff ruff format
