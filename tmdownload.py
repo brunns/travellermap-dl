@@ -275,7 +275,10 @@ TECH_LEVEL_DATA = [
 
 
 def main() -> None:
-    args = parse_args()
+    args = create_parser().parse_args()
+
+    init_logging(args.verbosity, log_json=args.log_json, silence_packages=["urllib3", "httpcore", "httpx"])
+    logger.info("args: %s", args, extra=vars(args))
 
     args.output_location.mkdir(parents=True, exist_ok=True)
     if args.populate_database:
@@ -718,17 +721,18 @@ def populate_database(sector: ApiSector, sector_dir: Path, session: Session) -> 
                 )
                 session.add(world)
             except (NoResultFound, IntegrityError, KeyError) as e:
-                logger.warning("Exception for world - skipped", extra=locals(), exc_info=e)
+                logger.warning(
+                    "Exception for world %s %s %s %s - skipped",
+                    sector.milieu,
+                    sector.names[0].text,
+                    row.get("SS"),
+                    row.get("Name"),
+                    extra=locals(),
+                    exc_info=e,
+                )
                 session.rollback()
             else:
                 session.commit()
-
-
-def parse_args() -> argparse.Namespace:
-    args = create_parser().parse_args()
-    init_logging(args.verbosity, silence_packages=["urllib3", "httpcore", "httpx"])
-
-    return args
 
 
 def create_parser() -> argparse.ArgumentParser:
@@ -764,6 +768,7 @@ def create_parser() -> argparse.ArgumentParser:
         "i.e. -v to see warnings, -vv for information messages, "
         "-vvv for debug messages, or -vvvv for trace messages.",
     )
+    parser.add_argument("-j", "--log-json", action="store_true", help="JSON formatted logging.")
     parser.add_argument("-V", "--version", action="version", version=VERSION)
     return parser
 
@@ -772,14 +777,22 @@ def init_logging(
     verbosity: int,
     handler: logging.Handler | None = None,
     silence_packages: Sequence[str] = (),
+    *,
+    log_json: bool = False,
 ) -> None:
+    """Initialize logger and warnings according to verbosity argument.
+    Verbosity levels of 0-3 supported."""
     handler = handler or logging.StreamHandler(stream=sys.stdout)
     level = LOG_LEVELS[min(verbosity, len(LOG_LEVELS) - 1)]
-    msg_format = "%(message)s"
+
     if level <= logging.DEBUG:
-        warnings.filterwarnings("ignore")
         msg_format = "%(asctime)s %(levelname)-8s %(name)s %(module)s.py:%(funcName)s():%(lineno)d %(message)s"
-    handler.setFormatter(JsonFormatter(msg_format))
+        warnings.filterwarnings("ignore")
+    else:
+        msg_format = "%(message)s"
+
+    handler.setFormatter(JsonFormatter(msg_format) if log_json else logging.Formatter(fmt=msg_format))
+
     logging.basicConfig(level=level, format=msg_format, handlers=[handler])
 
     for package in silence_packages:
