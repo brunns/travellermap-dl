@@ -22,7 +22,7 @@ import warnings
 from contextlib import nullcontext
 from itertools import product
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, TypeVar
 
 import httpx
 from pydantic import BaseModel, Field, ValidationError
@@ -107,6 +107,8 @@ SIZE_DATA = [
     {"value": "D", "description": "13000 miles (20800 km)."},
     {"value": "E", "description": "14000 miles (22400 km)."},
     {"value": "F", "description": "15000 miles (24000 km)."},
+    {"value": "Y", "description": ""},
+    {"value": "X", "description": "Unknown"},
 ]
 
 ATMOSPHERE_DATA = [
@@ -125,8 +127,10 @@ ATMOSPHERE_DATA = [
     {"value": "B", "description": "Corrosive."},
     {"value": "C", "description": "Insidious."},
     {"value": "D", "description": "Dense, high."},
-    {"value": "E", "description": "Ellipsoid."},
-    {"value": "F", "description": "Thin, low."},
+    {"value": "E", "description": "Thin, low"},
+    {"value": "F", "description": "Unusual"},
+    {"value": "V", "description": ""},
+    {"value": "X", "description": "Unknown"},
 ]
 
 HYDROSPHERE_DATA = [
@@ -142,6 +146,8 @@ HYDROSPHERE_DATA = [
     {"value": "8", "description": "71-80% water."},
     {"value": "9", "description": "81-90% water."},
     {"value": "A", "description": "91-100% water."},
+    {"value": "V", "description": ""},
+    {"value": "X", "description": "Unknown"},
 ]
 
 GOVERNMENT_DATA = [
@@ -197,6 +203,10 @@ POPULATION_DATA = [
     {"value": "A", "description": "Tens of billions."},
     {"value": "B", "description": "Hundreds of billions."},
     {"value": "C", "description": "Trillions."},
+    {"value": "D", "description": "Tens of trillions."},
+    {"value": "E", "description": "Hundreds of trillions."},
+    {"value": "F", "description": "Quadrillions."},
+    {"value": "X", "description": "Unknown"},
 ]
 
 LAW_LEVEL_DATA = [
@@ -212,15 +222,22 @@ LAW_LEVEL_DATA = [
     {"value": "8", "description": "Civilian movement controlled."},
     {"value": "9", "description": "Extreme social control."},
     {"value": "A", "description": "Full control of daily life."},
-    {"value": "B", "description": ""},
-    {"value": "C", "description": ""},
-    {"value": "D", "description": ""},
-    {"value": "E", "description": ""},
-    {"value": "F", "description": ""},
-    {"value": "G", "description": ""},
-    {"value": "H", "description": ""},
+    {"value": "B", "description": "Rigid control of civilian movement."},
+    {"value": "C", "description": "Unrestricted invasion of privacy."},
+    {"value": "D", "description": "Paramilitary law enforcement."},
+    {"value": "E", "description": "Full-fledged police state."},
+    {"value": "F", "description": "All facets of daily life regularly legislated and controlled."},
+    {"value": "G", "description": "Severe punishment for petty infractions."},
+    {"value": "H", "description": "Legalized oppressive practices."},
     {"value": "I", "description": ""},
-    {"value": "J", "description": ""},
+    {"value": "J", "description": "Routinely oppressive and restrictive."},
+    {"value": "K", "description": "Excessively oppressive and restrictive."},
+    {"value": "L", "description": "Totally oppressive and restrictive."},
+    {"value": "S", "description": "Special/Variable situation."},
+    {"value": "T", "description": ""},
+    {"value": "U", "description": ""},
+    {"value": "V", "description": ""},
+    {"value": "X", "description": "Unknown"},
 ]
 
 TECH_LEVEL_DATA = [
@@ -271,6 +288,10 @@ TECH_LEVEL_DATA = [
     {"value": "J", "name": "", "description": ""},
     {"value": "K", "name": "Plastic Metals", "description": ""},
     {"value": "L", "name": "Magic", "description": "Comprehensible only as technological magic."},
+    {"value": "M", "name": "", "description": ""},
+    {"value": "N", "name": "", "description": ""},
+    {"value": "V", "name": "", "description": ""},
+    {"value": "X", "name": "Unknown", "description": ""},
 ]
 
 
@@ -708,31 +729,43 @@ def populate_database(sector: ApiSector, sector_dir: Path, session: Session) -> 
                     name=row["Name"],
                     subsector=db_subsectors[row["SS"]],
                     hex_location=row["Hex"],
-                    starport=session.query(Starport).filter_by(value=starport).one(),
-                    size=session.query(Size).filter_by(value=size).one(),
-                    atmosphere=session.query(Atmosphere).filter_by(value=atmosphere).one(),
-                    hydrosphere=session.query(Hydrosphere).filter_by(value=hydrosphere).one(),
-                    population=session.query(Population).filter_by(value=population).one(),
-                    government=session.query(Government).filter_by(value=government).one(),
-                    law_level=session.query(LawLevel).filter_by(value=law_level).one(),
-                    tech_level=session.query(TechLevel).filter_by(value=tech_level).one(),
-                    zone=row["Zone"],
-                    bases=row["Bases"],
+                    starport=get_relation(Starport, starport, session),
+                    size=get_relation(Size, size, session),
+                    atmosphere=get_relation(Atmosphere, atmosphere, session),
+                    hydrosphere=get_relation(Hydrosphere, hydrosphere, session),
+                    population=get_relation(Population, population, session),
+                    government=get_relation(Government, government, session),
+                    law_level=get_relation(LawLevel, law_level, session),
+                    tech_level=get_relation(TechLevel, tech_level, session),
+                    zone=row.get("Zone", ""),
+                    bases=row.get("Bases", ""),
                 )
                 session.add(world)
             except (NoResultFound, IntegrityError, KeyError) as e:
                 logger.warning(
-                    "Exception for world %s %s %s %s - skipped",
+                    "Exception for world %s, %s, %s, %s, %s - skipped",
                     sector.milieu,
                     sector.names[0].text,
                     row.get("SS"),
                     row.get("Name"),
+                    row.get("UWP"),
                     extra=locals(),
                     exc_info=e,
                 )
                 session.rollback()
             else:
                 session.commit()
+
+
+T = TypeVar("T", bound=Base)
+
+
+def get_relation(entity: type[T], key: str, session: Session) -> T:
+    try:
+        return session.query(entity).filter_by(value=key).one()
+    except NoResultFound:
+        logger.error("Instance of %s with value %r not found", entity, key)  # noqa: TRY400
+        raise
 
 
 def create_parser() -> argparse.ArgumentParser:
