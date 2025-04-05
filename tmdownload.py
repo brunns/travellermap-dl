@@ -41,259 +41,6 @@ VERSION = "0.1.0"
 LOG_LEVELS = [logging.ERROR, logging.WARNING, logging.INFO, logging.DEBUG]
 logger = logging.getLogger(__name__)
 
-STARPORT_DATA = [
-    {"value": "?", "name": "Unknown", "description": "Unknown"},
-    {
-        "value": "A",
-        "name": "Class A",
-        "description": "Excellent quality installation. Refined fuel available. Annual maintenance overhaul available. "
-        "Shipyard capable of constructing starships and non-starships present. Naval base and/or scout base may be "
-        "present.",
-    },
-    {
-        "value": "B",
-        "name": "Class B",
-        "description": "Good quality installation. Refined fuel available. Annual maintenance overhaul available. "
-        "Shipyard capable of constructing non-starships present. Naval base and/or scout base may be present.",
-    },
-    {
-        "value": "C",
-        "name": "Class C",
-        "description": "Routine quality installation. Only unrefined fuel available. Reasonable repair facilities "
-        "present. Scout base may be present.",
-    },
-    {
-        "value": "D",
-        "name": "Class D",
-        "description": "Poor quality installation. Only unrefined fuel available. No repair or shipyard facilities "
-        "present. Scout base may be present.",
-    },
-    {
-        "value": "E",
-        "name": "Class E",
-        "description": "Frontier Installation. Essentially a marked spot of bedrock with no fuel, facilities, or bases "
-        "present.",
-    },
-    {"value": "X", "name": "Class X", "description": "No starport. No provision is made for any ship landings."},
-    {
-        "value": "F",
-        "name": "Spaceport Class F",
-        "description": "Good Quality. Minor damage repairable. Unrefined fuel available.",
-    },
-    {
-        "value": "G",
-        "name": "Spaceport Class G",
-        "description": "Poor Quality. Superficial repairs possible. Unrefined fuel available.",
-    },
-    {"value": "H", "name": "Spaceport Class H", "description": "Primitive Quality. No repairs or fuel available."},
-    {"value": "Y", "name": "None", "description": "None."},
-]
-
-SIZE_DATA = [
-    {"value": "?", "description": "Unknown"},
-    {"value": "0", "description": "Asteroid/Planetoid Belt."},
-    {"value": "1", "description": "1000 miles (1600 km) ."},
-    {"value": "2", "description": "2000 miles (3200 km)."},
-    {"value": "3", "description": "3000 miles (4800 km)."},
-    {"value": "4", "description": "4000 miles (6400 km)."},
-    {"value": "5", "description": "5000 miles (8000 km)."},
-    {"value": "6", "description": "6000 miles (9600 km)."},
-    {"value": "7", "description": "7000 miles (11200 km)."},
-    {"value": "8", "description": "8000 miles (12800 km) ."},
-    {"value": "9", "description": "9000 miles (14400 km)."},
-    {"value": "A", "description": "10000 miles (16000 km)."},
-    {"value": "B", "description": "11000 miles (18800 km)."},
-    {"value": "C", "description": "12000 miles (19200 km)."},
-    {"value": "D", "description": "13000 miles (20800 km)."},
-    {"value": "E", "description": "14000 miles (22400 km)."},
-    {"value": "F", "description": "15000 miles (24000 km)."},
-    {"value": "Y", "description": ""},
-    {"value": "X", "description": "Unknown"},
-]
-
-ATMOSPHERE_DATA = [
-    {"value": "?", "description": "Unknown"},
-    {"value": "0", "description": "No atmosphere."},
-    {"value": "1", "description": "Trace."},
-    {"value": "2", "description": "Very thin, tainted."},
-    {"value": "3", "description": "Very thin."},
-    {"value": "4", "description": "Thin, tainted."},
-    {"value": "5", "description": "Thin."},
-    {"value": "6", "description": "Standard."},
-    {"value": "7", "description": "Standard, tainted."},
-    {"value": "8", "description": "Dense."},
-    {"value": "9", "description": "Dense, tainted."},
-    {"value": "A", "description": "Exotic."},
-    {"value": "B", "description": "Corrosive."},
-    {"value": "C", "description": "Insidious."},
-    {"value": "D", "description": "Dense, high."},
-    {"value": "E", "description": "Thin, low"},
-    {"value": "F", "description": "Unusual"},
-    {"value": "V", "description": ""},
-    {"value": "X", "description": "Unknown"},
-]
-
-HYDROSPHERE_DATA = [
-    {"value": "?", "description": "Unknown"},
-    {"value": "0", "description": "No water."},
-    {"value": "1", "description": "10% or less water."},
-    {"value": "2", "description": "11-20% water."},
-    {"value": "3", "description": "21-30% water."},
-    {"value": "4", "description": "31-40% water."},
-    {"value": "5", "description": "41-50% water."},
-    {"value": "6", "description": "51-60% water."},
-    {"value": "7", "description": "61-70% water."},
-    {"value": "8", "description": "71-80% water."},
-    {"value": "9", "description": "81-90% water."},
-    {"value": "A", "description": "91-100% water."},
-    {"value": "V", "description": ""},
-    {"value": "X", "description": "Unknown"},
-]
-
-GOVERNMENT_DATA = [
-    {"value": "?", "description": "Unknown."},
-    {"value": "0", "description": "No Government Structure."},
-    {"value": "1", "description": "Company/Corporation."},
-    {"value": "2", "description": "Participating Democracy."},
-    {"value": "3", "description": "Self-Perpetuating Oligarchy."},
-    {"value": "4", "description": "Representative Democracy."},
-    {"value": "5", "description": "Feudal Technocracy."},
-    {"value": "6", "description": "Captive Government / Colony."},
-    {"value": "7", "description": "Balkanization."},
-    {"value": "8", "description": "Civil Service Bureaucracy."},
-    {"value": "9", "description": "Impersonal Bureaucracy."},
-    {"value": "A", "description": "Charismatic Dictator."},
-    {"value": "B", "description": "Non-Charismatic Dictator."},
-    {"value": "C", "description": "Charismatic Oligarchy."},
-    {"value": "D", "description": "Religious Dictatorship."},
-    {"value": "E", "description": "Religious Autocracy."},
-    {"value": "F", "description": "Totalitarian Oligarchy."},
-    {"value": "G", "description": "Small Station or Facility (Aslan)."},
-    {"value": "H", "description": "Split Clan Control (Aslan)."},
-    {"value": "J", "description": "Single On-world Clan Control (Aslan)."},
-    {"value": "K", "description": "Single Multi-world Clan Control (Aslan)."},
-    {"value": "L", "description": "Major Clan Control (Aslan)."},
-    {"value": "M", "description": "Vassal Clan Control (Aslan) or Military Dictatorship / Junta."},
-    {"value": "N", "description": "Major Vassal Clan Control (Aslan)."},
-    {"value": "P", "description": "Small Station or Facility (K'kree)."},
-    {"value": "Q", "description": "Krurruna or Krumanak Rule for Off-world Steppelord (K'kree) or Interim Government."},
-    {"value": "R", "description": "Steppelord On-world Rule (K'kree)."},
-    {"value": "S", "description": "Sept (Hiver) or Slave World."},
-    {"value": "T", "description": "Unsupervised Anarchy (Hiver) or Technologically Elevated Dictator."},
-    {"value": "U", "description": "Supervised Anarchy (Hiver)."},
-    {"value": "V", "description": "Viral Hell."},
-    {"value": "W", "description": "Committee (Hiver)."},
-    {"value": "X", "description": "Droyne Hierarchy (Droyne)."},
-    {"value": "Y", "description": "Unassigned / Undefined."},
-    {"value": "Z", "description": "Unassigned / Undefined."},
-]
-
-POPULATION_DATA = [
-    {"value": "?", "description": "Unknown"},
-    {"value": "0", "description": "Low population (up to a few dozen)."},
-    {"value": "1", "description": "Tens to hundreds."},
-    {"value": "2", "description": "Hundreds to thousands."},
-    {"value": "3", "description": "Thousands to tens of thousands."},
-    {"value": "4", "description": "Tens of thousands to hundreds of thousands."},
-    {"value": "5", "description": "Hundreds of thousands to millions."},
-    {"value": "6", "description": "Millions to tens of millions."},
-    {"value": "7", "description": "Tens of millions to hundreds of millions."},
-    {"value": "8", "description": "Hundreds of millions to billions."},
-    {"value": "9", "description": "Billions."},
-    {"value": "A", "description": "Tens of billions."},
-    {"value": "B", "description": "Hundreds of billions."},
-    {"value": "C", "description": "Trillions."},
-    {"value": "D", "description": "Tens of trillions."},
-    {"value": "E", "description": "Hundreds of trillions."},
-    {"value": "F", "description": "Quadrillions."},
-    {"value": "X", "description": "Unknown"},
-]
-
-LAW_LEVEL_DATA = [
-    {"value": "?", "description": "Unknown"},
-    {"value": "0", "description": "No law."},
-    {"value": "1", "description": "Low law, unrestricted weapons."},
-    {"value": "2", "description": "Some firearm restrictions."},
-    {"value": "3", "description": "Heavy weapon restrictions."},
-    {"value": "4", "description": "Personal concealable weapons banned."},
-    {"value": "5", "description": "No firearms outside home."},
-    {"value": "6", "description": "All firearms banned."},
-    {"value": "7", "description": "All weapons banned."},
-    {"value": "8", "description": "Civilian movement controlled."},
-    {"value": "9", "description": "Extreme social control."},
-    {"value": "A", "description": "Full control of daily life."},
-    {"value": "B", "description": "Rigid control of civilian movement."},
-    {"value": "C", "description": "Unrestricted invasion of privacy."},
-    {"value": "D", "description": "Paramilitary law enforcement."},
-    {"value": "E", "description": "Full-fledged police state."},
-    {"value": "F", "description": "All facets of daily life regularly legislated and controlled."},
-    {"value": "G", "description": "Severe punishment for petty infractions."},
-    {"value": "H", "description": "Legalized oppressive practices."},
-    {"value": "I", "description": ""},
-    {"value": "J", "description": "Routinely oppressive and restrictive."},
-    {"value": "K", "description": "Excessively oppressive and restrictive."},
-    {"value": "L", "description": "Totally oppressive and restrictive."},
-    {"value": "S", "description": "Special/Variable situation."},
-    {"value": "T", "description": ""},
-    {"value": "U", "description": ""},
-    {"value": "V", "description": ""},
-    {"value": "X", "description": "Unknown"},
-]
-
-TECH_LEVEL_DATA = [
-    {"value": "?", "name": "Unknown", "description": "Unknown technology level."},
-    {"value": "0", "name": "Stone Age", "description": "Pre-industrial, no technology."},
-    {"value": "1", "name": "Bronze/Iron Age", "description": "Basic metallurgy, sailing ships."},
-    {"value": "2", "name": "Renaissance", "description": "Gunpowder, printing, early scientific development."},
-    {"value": "3", "name": "Industrial Revolution", "description": "Steam power, railroads, simple factories."},
-    {"value": "4", "name": "Late Industrial Age", "description": "Combustion engines, radio, aircraft."},
-    {"value": "5", "name": "Early Space Age", "description": "Basic computers, early rockets, satellites."},
-    {"value": "6", "name": "Fusion Age", "description": "Nuclear power, early fusion, advanced electronics."},
-    {"value": "7", "name": "Interplanetary Age", "description": "Basic space travel, colonization of planets."},
-    {"value": "8", "name": "Jump Drive Age", "description": "Basic interstellar travel, jump-1 starships."},
-    {"value": "9", "name": "Expanded Star Travel", "description": "Jump-2 technology, advanced shipbuilding."},
-    {"value": "A", "name": "Interstellar Society", "description": "Jump-3 technology, high automation."},
-    {
-        "value": "B",
-        "name": "Lower Average Imperial.",
-        "description": "Jump-4 technology, significant AI and cybernetics.",
-    },
-    {"value": "C", "name": "Average Imperial", "description": "Jump-5 technology, planetary-scale engineering."},
-    {
-        "value": "D",
-        "name": "Above Average Imperial",
-        "description": "Jump-6 technology, advanced artificial intelligence.",
-    },
-    {
-        "value": "E",
-        "name": "Above Average Imperial",
-        "description": "Highly efficient starships, major genetic engineering.",
-    },
-    {
-        "value": "F",
-        "name": "Technical Imperial Maximum",
-        "description": "Extremely high technology, nearly self-sufficient systems.",
-    },
-    {
-        "value": "G",
-        "name": "Robots",
-        "description": "Near-complete automation, and highly efficient energy generation.",
-    },
-    {
-        "value": "H",
-        "name": "Artificial Intelligence",
-        "description": "Extensive megastructures, and advanced matter manipulation.",
-    },
-    {"value": "I", "name": "Personal Disintegrators", "description": ""},
-    {"value": "J", "name": "", "description": ""},
-    {"value": "K", "name": "Plastic Metals", "description": ""},
-    {"value": "L", "name": "Magic", "description": "Comprehensible only as technological magic."},
-    {"value": "M", "name": "", "description": ""},
-    {"value": "N", "name": "", "description": ""},
-    {"value": "V", "name": "", "description": ""},
-    {"value": "X", "name": "Unknown", "description": ""},
-]
-
 
 def main() -> None:
     args = create_parser().parse_args()
@@ -598,7 +345,8 @@ class Starport(Base):
     __tablename__ = "starports"
 
     id = Column(Integer, primary_key=True)
-    value = Column(String, nullable=False, unique=True)
+    code = Column(String, nullable=False, unique=True)
+    value = Column(Integer, nullable=True, unique=False)
     name = Column(String, nullable=False)
     description = Column(String, nullable=True)
 
@@ -610,7 +358,8 @@ class Size(Base):
     __tablename__ = "sizes"
 
     id = Column(Integer, primary_key=True)
-    value = Column(String, nullable=False, unique=True)
+    code = Column(String, nullable=False, unique=True)
+    value = Column(Integer, nullable=True, unique=False)
     description = Column(String, nullable=True)
 
     def __repr__(self) -> str:
@@ -621,7 +370,8 @@ class Atmosphere(Base):
     __tablename__ = "atmospheres"
 
     id = Column(Integer, primary_key=True)
-    value = Column(String, nullable=False, unique=True)
+    code = Column(String, nullable=False, unique=True)
+    value = Column(Integer, nullable=True, unique=False)
     description = Column(String, nullable=True)
 
     def __repr__(self) -> str:
@@ -632,7 +382,8 @@ class Hydrosphere(Base):
     __tablename__ = "hydrospheres"
 
     id = Column(Integer, primary_key=True)
-    value = Column(String, nullable=False, unique=True)
+    code = Column(String, nullable=False, unique=True)
+    value = Column(Integer, nullable=True, unique=False)
     description = Column(String, nullable=True)
 
     def __repr__(self) -> str:
@@ -643,7 +394,8 @@ class Government(Base):
     __tablename__ = "governments"
 
     id = Column(Integer, primary_key=True)
-    value = Column(String, nullable=False, unique=True)
+    code = Column(String, nullable=False, unique=True)
+    value = Column(Integer, nullable=True, unique=False)
     description = Column(String, nullable=True)
 
     def __repr__(self) -> str:
@@ -654,7 +406,8 @@ class LawLevel(Base):
     __tablename__ = "law_levels"
 
     id = Column(Integer, primary_key=True)
-    value = Column(String, nullable=False, unique=True)
+    code = Column(String, nullable=False, unique=True)
+    value = Column(Integer, nullable=True, unique=False)
     description = Column(String, nullable=True)
 
     def __repr__(self) -> str:
@@ -665,7 +418,8 @@ class Population(Base):
     __tablename__ = "populations"
 
     id = Column(Integer, primary_key=True)
-    value = Column(String, nullable=False, unique=True)
+    code = Column(String, nullable=False, unique=True)
+    value = Column(Integer, nullable=True, unique=False)
     description = Column(String, nullable=True)
 
     def __repr__(self) -> str:
@@ -676,9 +430,12 @@ class TechLevel(Base):
     __tablename__ = "tech_levels"
 
     id = Column(Integer, primary_key=True)
-    value = Column(String, nullable=False, unique=True)
+    code = Column(String, nullable=False, unique=True)
+    value = Column(Integer, nullable=True, unique=False)
     name = Column(String, nullable=False)
-    description = Column(String, nullable=True)
+    imperial = Column(String, nullable=False)
+    ce = Column(String, nullable=False)
+    remarks = Column(String, nullable=True)
 
     def __repr__(self) -> str:
         return f"<TechLevel(value='{self.value}', name='{self.name}', description='{self.description}')>"
@@ -762,7 +519,7 @@ T = TypeVar("T", bound=Base)
 
 def get_relation(entity: type[T], key: str, session: Session) -> T:
     try:
-        return session.query(entity).filter_by(value=key).one()
+        return session.query(entity).filter_by(code=key).one()
     except NoResultFound:
         logger.error("Instance of %s with value %r not found", entity, key)  # noqa: TRY400
         raise
@@ -831,6 +588,480 @@ def init_logging(
     for package in silence_packages:
         logging.getLogger(package).setLevel(max([level, logging.WARNING]))
 
+
+# See https://wiki.travellerrpg.com/Universal_World_Profile and https://travellermap.com/doc/secondsurvey for UWP data.
+
+STARPORT_DATA = [
+    {"code": "?", "value": None, "name": "Unknown", "description": "Unknown"},
+    {
+        "code": "A",
+        "value": 10,
+        "name": "Class A",
+        "description": "Excellent quality installation. Refined fuel available. Annual maintenance overhaul available. "
+        "Shipyard capable of constructing starships and non-starships present. Naval base and/or scout base may be "
+        "present.",
+    },
+    {
+        "code": "B",
+        "value": 11,
+        "name": "Class B",
+        "description": "Good quality installation. Refined fuel available. Annual maintenance overhaul available. "
+        "Shipyard capable of constructing non-starships present. Naval base and/or scout base may be present.",
+    },
+    {
+        "code": "C",
+        "value": 12,
+        "name": "Class C",
+        "description": "Routine quality installation. Only unrefined fuel available. Reasonable repair facilities "
+        "present. Scout base may be present.",
+    },
+    {
+        "code": "D",
+        "value": 13,
+        "name": "Class D",
+        "description": "Poor quality installation. Only unrefined fuel available. No repair or shipyard facilities "
+        "present. Scout base may be present.",
+    },
+    {
+        "code": "E",
+        "value": 14,
+        "name": "Class E",
+        "description": "Frontier Installation. Essentially a marked spot of bedrock with no fuel, facilities, or bases "
+        "present.",
+    },
+    {
+        "code": "X",
+        "value": 31,
+        "name": "Class X",
+        "description": "No starport. No provision is made for any ship landings.",
+    },
+    {
+        "code": "F",
+        "value": 15,
+        "name": "Spaceport Class F",
+        "description": "Good Quality. Minor damage repairable. Unrefined fuel available.",
+    },
+    {
+        "code": "G",
+        "value": 16,
+        "name": "Spaceport Class G",
+        "description": "Poor Quality. Superficial repairs possible. Unrefined fuel available.",
+    },
+    {
+        "code": "H",
+        "value": 17,
+        "name": "Spaceport Class H",
+        "description": "Primitive Quality. No repairs or fuel available.",
+    },
+    {"code": "Y", "value": 32, "name": "None", "description": "None."},
+]
+
+SIZE_DATA = [
+    {"code": "?", "value": None, "description": "Unknown"},
+    {"code": "0", "value": 0, "value": 0, "description": "Asteroid/Planetoid Belt."},
+    {"code": "1", "value": 1, "value": 1, "description": "1000 miles (1600 km) ."},
+    {"code": "2", "value": 2, "description": "2000 miles (3200 km)."},
+    {"code": "3", "value": 3, "description": "3000 miles (4800 km)."},
+    {"code": "4", "value": 4, "description": "4000 miles (6400 km)."},
+    {"code": "5", "value": 5, "description": "5000 miles (8000 km)."},
+    {"code": "6", "value": 6, "description": "6000 miles (9600 km)."},
+    {"code": "7", "value": 7, "description": "7000 miles (11200 km)."},
+    {"code": "8", "value": 8, "description": "8000 miles (12800 km) ."},
+    {"code": "9", "value": 9, "description": "9000 miles (14400 km)."},
+    {"code": "A", "value": 10, "description": "10000 miles (16000 km)."},
+    {"code": "B", "value": 11, "description": "11000 miles (18800 km)."},
+    {"code": "C", "value": 12, "description": "12000 miles (19200 km)."},
+    {"code": "D", "value": 13, "description": "13000 miles (20800 km)."},
+    {"code": "E", "value": 14, "description": "14000 miles (22400 km)."},
+    {"code": "F", "value": 15, "description": "15000 miles (24000 km)."},
+    {"code": "Y", "value": 32, "description": ""},
+    {"code": "X", "value": None, "description": "Unknown"},
+]
+
+ATMOSPHERE_DATA = [
+    {"code": "?", "value": None, "description": "Unknown"},
+    {"code": "0", "value": 0, "description": "No atmosphere."},
+    {"code": "1", "value": 1, "description": "Trace."},
+    {"code": "2", "value": 2, "description": "Very thin, tainted."},
+    {"code": "3", "value": 3, "description": "Very thin."},
+    {"code": "4", "value": 4, "description": "Thin, tainted."},
+    {"code": "5", "value": 5, "description": "Thin."},
+    {"code": "6", "value": 6, "description": "Standard."},
+    {"code": "7", "value": 7, "description": "Standard, tainted."},
+    {"code": "8", "value": 8, "description": "Dense."},
+    {"code": "9", "value": 9, "description": "Dense, tainted."},
+    {"code": "A", "value": 10, "description": "Exotic."},
+    {"code": "B", "value": 11, "description": "Corrosive."},
+    {"code": "C", "value": 12, "description": "Insidious."},
+    {"code": "D", "value": 13, "description": "Dense, high."},
+    {"code": "E", "value": 14, "description": "Thin, low"},
+    {"code": "F", "value": 15, "description": "Unusual"},
+    {"code": "V", "value": 29, "description": ""},
+    {"code": "X", "value": None, "description": "Unknown"},
+]
+
+HYDROSPHERE_DATA = [
+    {"code": "?", "value": None, "description": "Unknown"},
+    {"code": "0", "value": 0, "description": "No water."},
+    {"code": "1", "value": 1, "description": "10% or less water."},
+    {"code": "2", "value": 2, "description": "11-20% water."},
+    {"code": "3", "value": 3, "description": "21-30% water."},
+    {"code": "4", "value": 4, "description": "31-40% water."},
+    {"code": "5", "value": 5, "description": "41-50% water."},
+    {"code": "6", "value": 6, "description": "51-60% water."},
+    {"code": "7", "value": 7, "description": "61-70% water."},
+    {"code": "8", "value": 8, "description": "71-80% water."},
+    {"code": "9", "value": 9, "description": "81-90% water."},
+    {"code": "A", "value": 10, "description": "91-100% water."},
+    {"code": "V", "value": 29, "description": ""},
+    {"code": "X", "value": None, "description": "Unknown"},
+]
+
+GOVERNMENT_DATA = [
+    {"code": "?", "value": None, "description": "Unknown."},
+    {"code": "0", "value": 0, "description": "No Government Structure."},
+    {"code": "1", "value": 1, "description": "Company/Corporation."},
+    {"code": "2", "value": 2, "description": "Participating Democracy."},
+    {"code": "3", "value": 3, "description": "Self-Perpetuating Oligarchy."},
+    {"code": "4", "value": 4, "description": "Representative Democracy."},
+    {"code": "5", "value": 5, "description": "Feudal Technocracy."},
+    {"code": "6", "value": 6, "description": "Captive Government / Colony."},
+    {"code": "7", "value": 7, "description": "Balkanization."},
+    {"code": "8", "value": 8, "description": "Civil Service Bureaucracy."},
+    {"code": "9", "value": 9, "description": "Impersonal Bureaucracy."},
+    {"code": "A", "value": 10, "description": "Charismatic Dictator."},
+    {"code": "B", "value": 11, "description": "Non-Charismatic Dictator."},
+    {"code": "C", "value": 12, "description": "Charismatic Oligarchy."},
+    {"code": "D", "value": 13, "description": "Religious Dictatorship."},
+    {"code": "E", "value": 14, "description": "Religious Autocracy."},
+    {"code": "F", "value": 15, "description": "Totalitarian Oligarchy."},
+    {"code": "G", "value": 16, "description": "Small Station or Facility (Aslan)."},
+    {"code": "H", "value": 17, "description": "Split Clan Control (Aslan)."},
+    {"code": "J", "value": 18, "description": "Single On-world Clan Control (Aslan)."},
+    {"code": "K", "value": 19, "description": "Single Multi-world Clan Control (Aslan)."},
+    {"code": "L", "value": 20, "description": "Major Clan Control (Aslan)."},
+    {"code": "M", "value": 21, "description": "Vassal Clan Control (Aslan) or Military Dictatorship / Junta."},
+    {"code": "N", "value": 22, "description": "Major Vassal Clan Control (Aslan)."},
+    {"code": "P", "value": 23, "description": "Small Station or Facility (K'kree)."},
+    {
+        "code": "Q",
+        "value": 24,
+        "description": "Krurruna or Krumanak Rule for Off-world Steppelord (K'kree) or Interim Government.",
+    },
+    {"code": "R", "value": 25, "description": "Steppelord On-world Rule (K'kree)."},
+    {"code": "S", "value": 26, "description": "Sept (Hiver) or Slave World."},
+    {"code": "T", "value": 27, "description": "Unsupervised Anarchy (Hiver) or Technologically Elevated Dictator."},
+    {"code": "U", "value": 28, "description": "Supervised Anarchy (Hiver)."},
+    {"code": "V", "value": 29, "description": "Viral Hell."},
+    {"code": "W", "value": 30, "description": "Committee (Hiver)."},
+    {"code": "X", "value": 31, "description": "Droyne Hierarchy (Droyne)."},
+    {"code": "Y", "value": 32, "description": "Unassigned / Undefined."},
+    {"code": "Z", "value": None, "description": "Unknown."},
+]
+
+POPULATION_DATA = [
+    {"code": "?", "value": None, "description": "Unknown"},
+    {"code": "0", "value": 0, "description": "Low population (up to a few dozen)."},
+    {"code": "1", "value": 1, "description": "Tens to hundreds."},
+    {"code": "2", "value": 2, "description": "Hundreds to thousands."},
+    {"code": "3", "value": 3, "description": "Thousands to tens of thousands."},
+    {"code": "4", "value": 4, "description": "Tens of thousands to hundreds of thousands."},
+    {"code": "5", "value": 5, "description": "Hundreds of thousands to millions."},
+    {"code": "6", "value": 6, "description": "Millions to tens of millions."},
+    {"code": "7", "value": 7, "description": "Tens of millions to hundreds of millions."},
+    {"code": "8", "value": 8, "description": "Hundreds of millions to billions."},
+    {"code": "9", "value": 9, "description": "Billions."},
+    {"code": "A", "value": 10, "description": "Tens of billions."},
+    {"code": "B", "value": 11, "description": "Hundreds of billions."},
+    {"code": "C", "value": 12, "description": "Trillions."},
+    {"code": "D", "value": 13, "description": "Tens of trillions."},
+    {"code": "E", "value": 14, "description": "Hundreds of trillions."},
+    {"code": "F", "value": 15, "description": "Quadrillions."},
+    {"code": "X", "value": None, "description": "Unknown"},
+]
+
+LAW_LEVEL_DATA = [
+    {"code": "?", "value": None, "description": "Unknown"},
+    {"code": "0", "value": 0, "description": "No law."},
+    {"code": "1", "value": 1, "description": "Low law, unrestricted weapons."},
+    {"code": "2", "value": 2, "description": "Some firearm restrictions."},
+    {"code": "3", "value": 3, "description": "Heavy weapon restrictions."},
+    {"code": "4", "value": 4, "description": "Personal concealable weapons banned."},
+    {"code": "5", "value": 5, "description": "No firearms outside home."},
+    {"code": "6", "value": 6, "description": "All firearms banned."},
+    {"code": "7", "value": 7, "description": "All weapons banned."},
+    {"code": "8", "value": 8, "description": "Civilian movement controlled."},
+    {"code": "9", "value": 9, "description": "Extreme social control."},
+    {"code": "A", "value": 10, "description": "Full control of daily life."},
+    {"code": "B", "value": 11, "description": "Rigid control of civilian movement."},
+    {"code": "C", "value": 12, "description": "Unrestricted invasion of privacy."},
+    {"code": "D", "value": 13, "description": "Paramilitary law enforcement."},
+    {"code": "E", "value": 14, "description": "Full-fledged police state."},
+    {"code": "F", "value": 15, "description": "All facets of daily life regularly legislated and controlled."},
+    {"code": "G", "value": 16, "description": "Severe punishment for petty infractions."},
+    {"code": "H", "value": 17, "description": "Legalized oppressive practices."},
+    {"code": "J", "value": 18, "description": "Routinely oppressive and restrictive."},
+    {"code": "K", "value": 19, "description": "Excessively oppressive and restrictive."},
+    {"code": "L", "value": 20, "description": "Totally oppressive and restrictive."},
+    {"code": "S", "value": 26, "description": "Special/Variable situation."},
+    {"code": "T", "value": 27, "description": ""},
+    {"code": "U", "value": 28, "description": ""},
+    {"code": "V", "value": 29, "description": ""},
+    {"code": "X", "value": None, "description": "Unknown"},
+]
+
+TECH_LEVEL_DATA = [
+    {
+        "code": "?",
+        "value": None,
+        "name": "Unknown",
+        "imperial": "N/A",
+        "ce": "N/A",
+        "remarks": "Unknown technology level.",
+    },
+    {
+        "code": "0",
+        "value": 0,
+        "name": "Neolithic Age",
+        "imperial": "N/A",
+        "ce": "6000 BCE",
+        "remarks": "Polished tools, fire, agriculture.",
+    },
+    {
+        "code": "1",
+        "value": 1,
+        "name": "Bronze/Iron Age",
+        "imperial": "N/A",
+        "ce": "3500 BCE",
+        "remarks": "Basic metallurgy, sailing ships, water power, abacu, wheel, writing.",
+    },
+    {
+        "code": "2",
+        "value": 2,
+        "name": "Age of Sail",
+        "imperial": "N/A",
+        "ce": "1500 CE",
+        "remarks": "Gunpowder, printing, early scientific development.",
+    },
+    {
+        "code": "3",
+        "value": 3,
+        "name": "Industrial Revolution",
+        "imperial": "N/A",
+        "ce": "1730 CE",
+        "remarks": "Coal, steam, railways, simple factories, calculus, musket.",
+    },
+    {
+        "code": "4",
+        "value": 4,
+        "name": "Mechanized Age",
+        "imperial": "N/A",
+        "ce": "1900 CE",
+        "remarks": "Electricity, skyscrapers, image capture, antiseptics, internal combustion, radio, aircraft.",
+    },
+    {
+        "code": "5",
+        "value": 5,
+        "name": "Broadcast Age",
+        "imperial": "N/A",
+        "ce": "1930 CE",
+        "remarks": "Oil, electronic calculators, machine guns.",
+    },
+    {
+        "code": "6",
+        "value": 6,
+        "name": "Atomic Age",
+        "imperial": "N/A",
+        "ce": "1940 CE",
+        "remarks": "Broadcast video, nuclear power, computers.",
+    },
+    {
+        "code": "7",
+        "value": 7,
+        "name": "Space Age",
+        "imperial": "N/A",
+        "ce": "1970 CE",
+        "remarks": "Basic space travel, semiconductors, solar, organ transplants.",
+    },
+    {
+        "code": "8",
+        "value": 8,
+        "name": "Information Age",
+        "imperial": "N/A",
+        "ce": "1990 CE",
+        "remarks": "Cell phones, photonics, slow drug.",
+    },
+    {
+        "code": "9",
+        "value": 9,
+        "name": "Gravitics Age",
+        "imperial": "N/A",
+        "ce": "2050 CE",
+        "remarks": "Jump-1, arcologies, trideo, fast drug.",
+    },
+    {
+        "code": "A",
+        "value": 10,
+        "name": "Basic Fusion Age",
+        "imperial": "N/A",
+        "ce": "2120 CE",
+        "remarks": "Grav vehicles, anti-virals, fluidics.",
+    },
+    {
+        "code": "B",
+        "value": 11,
+        "name": "FusionPlus Age; Average Imperial",
+        "imperial": "0",
+        "ce": "4521 CE",
+        "remarks": "Jump-2, Semi-organic brains.",
+    },
+    {
+        "code": "C",
+        "value": 12,
+        "name": "Positronics Age; Average Imperial",
+        "imperial": "30",
+        "ce": "4551 CE",
+        "remarks": "Jump-3, biologics.",
+    },
+    {
+        "code": "D",
+        "value": 13,
+        "name": "Cloning Age; Average Stellar",
+        "imperial": "600",
+        "ce": "5121 CE",
+        "remarks": "Jump-4, robots, wafer technology.",
+    },
+    {
+        "code": "E",
+        "value": 14,
+        "name": "Geneering Age; High Stellar",
+        "imperial": "1000",
+        "ce": "5522 CE",
+        "remarks": "Jump-5, self-aware computers, collector, temporary personality transfer.",
+    },
+    {
+        "code": "F",
+        "value": 15,
+        "name": "Anagathics Age; Imperial Maximum",
+        "imperial": "1105",
+        "ce": "5627 CE",
+        "remarks": "Jump-6, mindwipe.",
+    },
+    {
+        "code": "G",
+        "value": 16,
+        "name": "Artificial Persons Age",
+        "imperial": "1850",
+        "ce": "6372 CE",
+        "remarks": "Republic of Regina, black globes.",
+    },
+    {
+        "code": "H",
+        "value": 17,
+        "name": "Personality Transfer Age",
+        "imperial": "1902",
+        "ce": "6325 CE",
+        "remarks": "Republic of Regina, Hop-1, Permanent personality transfer.",
+    },
+    {
+        "code": "J",
+        "value": 18,
+        "name": "Exotics Age",
+        "imperial": "N/A",
+        "ce": "N/A",
+        "remarks": "JPersonal damper, Disruptor.",
+    },
+    {
+        "code": "K",
+        "value": 19,
+        "name": "Matter Transport Age / Antimatter Age",
+        "imperial": "N/A",
+        "ce": "N/A",
+        "remarks": "Hop-2, Disintegrator pistol.",
+    },
+    {
+        "code": "L",
+        "value": 20,
+        "name": "Skipdrive Age",
+        "imperial": "N/A",
+        "ce": "N/A",
+        "remarks": "Hop-3, Skip-1, Disintegrator wand.",
+    },
+    {
+        "code": "M",
+        "value": 21,
+        "name": "Stasis Age",
+        "imperial": "N/A",
+        "ce": "N/A",
+        "remarks": "Hop-4, Relativity rifle.",
+    },
+    {"code": "N", "value": 22, "name": "Planet-scrubber Age", "imperial": "N/A", "ce": "N/A", "": "Hop-5, Skip-2"},
+    {
+        "code": "P",
+        "value": 23,
+        "name": "Psychohistory Age / Rapid Terraforming Age",
+        "imperial": "N/A",
+        "ce": "N/A",
+        "remarks": "Hop-6, Skip-3, Leap-1",
+    },
+    {
+        "code": "Q",
+        "value": 24,
+        "name": "Engineered Societies Age / Rosette Age",
+        "imperial": "N/A",
+        "ce": "N/A",
+        "remarks": "Hop-7, Skip-4",
+    },
+    {
+        "code": "R",
+        "value": 25,
+        "name": "Psionic Engineering Age",
+        "imperial": "N/A",
+        "ce": "N/A",
+        "remarks": "Hop-8, Skip-5, Leap-2",
+    },
+    {
+        "code": "S",
+        "value": 26,
+        "name": "Star Energy Age (Kardashev Type II)",
+        "imperial": "N/A",
+        "ce": "N/A",
+        "remarks": "Hop-9, Skip-6, Leap-3, Bound-1",
+    },
+    {"code": "T", "value": 27, "name": "Ringworlds Age", "imperial": "N/A", "ce": "N/A", "remarks": "Skip-7, Leap-4"},
+    {
+        "code": "U",
+        "value": 28,
+        "name": "Reality Engineering Age",
+        "imperial": "N/A",
+        "ce": "N/A",
+        "remarks": "Skip-8, Leap-5, Bound-2",
+    },
+    {
+        "code": "V",
+        "value": 29,
+        "name": "Dyson Sphere Age",
+        "imperial": "N/A",
+        "ce": "N/A",
+        "remarks": "Skip-9, Leap-6, Bound-3, Vault-1",
+    },
+    {
+        "code": "W",
+        "value": 30,
+        "name": "Remote Technology Age",
+        "imperial": "N/A",
+        "ce": "N/A",
+        "remarks": "Leap-7, Bound-4",
+    },
+    {
+        "code": "X",
+        "value": 31,
+        "name": "Pocket Universes Age",
+        "imperial": "N/A",
+        "ce": "N/A",
+        "remarks": "Leap-8, Bound-5, Vault-2",
+    },
+]
 
 if __name__ == "__main__":
     main()
