@@ -1,0 +1,21 @@
+[
+  { "code": "?", "value": null, "description": "Unknown" },
+  { "code": "0", "value": 0, "description": "Asteroid/Planetoid Belt." },
+  { "code": "1", "value": 1, "description": "1000 miles (1600 km)." },
+  { "code": "2", "value": 2, "description": "2000 miles (3200 km)." },
+  { "code": "3", "value": 3, "description": "3000 miles (4800 km)." },
+  { "code": "4", "value": 4, "description": "4000 miles (6400 km)." },
+  { "code": "5", "value": 5, "description": "5000 miles (8000 km)." },
+  { "code": "6", "value": 6, "description": "6000 miles (9600 km)." },
+  { "code": "7", "value": 7, "description": "7000 miles (11200 km)." },
+  { "code": "8", "value": 8, "description": "8000 miles (12800 km)." },
+  { "code": "9", "value": 9, "description": "9000 miles (14400 km)." },
+  { "code": "A", "value": 10, "description": "10000 miles (16000 km)." },
+  { "code": "B", "value": 11, "description": "11000 miles (18800 km)." },
+  { "code": "C", "value": 12, "description": "12000 miles (19200 km)." },
+  { "code": "D", "value": 13, "description": "13000 miles (20800 km)." },
+  { "code": "E", "value": 14, "description": "14000 miles (22400 km)." },
+  { "code": "F", "value": 15, "description": "15000 miles (24000 km)." },
+  { "code": "X", "value": null, "description": "Unknown" },
+  { "code": "Y", "value": 32, "description": "" }
+]

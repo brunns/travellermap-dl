@@ -1,0 +1,16 @@
+[
+  { "code": "?", "value": null, "description": "Unknown" },
+  { "code": "0", "value": 0, "description": "No water." },
+  { "code": "1", "value": 1, "description": "10% or less water." },
+  { "code": "2", "value": 2, "description": "11-20% water." },
+  { "code": "3", "value": 3, "description": "21-30% water." },
+  { "code": "4", "value": 4, "description": "31-40% water." },
+  { "code": "5", "value": 5, "description": "41-50% water." },
+  { "code": "6", "value": 6, "description": "51-60% water." },
+  { "code": "7", "value": 7, "description": "61-70% water." },
+  { "code": "8", "value": 8, "description": "71-80% water." },
+  { "code": "9", "value": 9, "description": "81-90% water." },
+  { "code": "A", "value": 10, "description": "91-100% water." },
+  { "code": "V", "value": 29, "description": "" },
+  { "code": "X", "value": null, "description": "Unknown" }
+]

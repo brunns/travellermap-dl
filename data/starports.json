@@ -1,0 +1,58 @@
+[
+  { "code": "?", "value": null, "name": "Unknown", "description": "Unknown" },
+  {
+    "code": "A",
+    "value": 10,
+    "name": "Class A",
+    "description": "Excellent quality installation. Refined fuel available. Annual maintenance overhaul available. Shipyard capable of constructing starships and non-starships present. Naval base and/or scout base may be present."
+  },
+  {
+    "code": "B",
+    "value": 11,
+    "name": "Class B",
+    "description": "Good quality installation. Refined fuel available. Annual maintenance overhaul available. Shipyard capable of constructing non-starships present. Naval base and/or scout base may be present."
+  },
+  {
+    "code": "C",
+    "value": 12,
+    "name": "Class C",
+    "description": "Routine quality installation. Only unrefined fuel available. Reasonable repair facilities present. Scout base may be present."
+  },
+  {
+    "code": "D",
+    "value": 13,
+    "name": "Class D",
+    "description": "Poor quality installation. Only unrefined fuel available. No repair or shipyard facilities present. Scout base may be present."
+  },
+  {
+    "code": "E",
+    "value": 14,
+    "name": "Class E",
+    "description": "Frontier Installation. Essentially a marked spot of bedrock with no fuel, facilities, or bases present."
+  },
+  {
+    "code": "F",
+    "value": 15,
+    "name": "Spaceport Class F",
+    "description": "Good Quality. Minor damage repairable. Unrefined fuel available."
+  },
+  {
+    "code": "G",
+    "value": 16,
+    "name": "Spaceport Class G",
+    "description": "Poor Quality. Superficial repairs possible. Unrefined fuel available."
+  },
+  {
+    "code": "H",
+    "value": 17,
+    "name": "Spaceport Class H",
+    "description": "Primitive Quality. No repairs or fuel available."
+  },
+  {
+    "code": "X",
+    "value": 31,
+    "name": "Class X",
+    "description": "No starport. No provision is made for any ship landings."
+  },
+  { "code": "Y", "value": 32, "name": "None", "description": "None." }
+]

@@ -1,0 +1,70 @@
+[
+  { "code": "?", "value": null, "description": "Unknown" },
+  { "code": "0", "value": 0, "description": "No law." },
+  { "code": "1", "value": 1, "description": "Low law, unrestricted weapons." },
+  { "code": "2", "value": 2, "description": "Some firearm restrictions." },
+  { "code": "3", "value": 3, "description": "Heavy weapon restrictions." },
+  {
+    "code": "4",
+    "value": 4,
+    "description": "Personal concealable weapons banned."
+  },
+  { "code": "5", "value": 5, "description": "No firearms outside home." },
+  { "code": "6", "value": 6, "description": "All firearms banned." },
+  { "code": "7", "value": 7, "description": "All weapons banned." },
+  { "code": "8", "value": 8, "description": "Civilian movement controlled." },
+  { "code": "9", "value": 9, "description": "Extreme social control." },
+  { "code": "A", "value": 10, "description": "Full control of daily life." },
+  {
+    "code": "B",
+    "value": 11,
+    "description": "Rigid control of civilian movement."
+  },
+  {
+    "code": "C",
+    "value": 12,
+    "description": "Unrestricted invasion of privacy."
+  },
+  { "code": "D", "value": 13, "description": "Paramilitary law enforcement." },
+  { "code": "E", "value": 14, "description": "Full-fledged police state." },
+  {
+    "code": "F",
+    "value": 15,
+    "description": "All facets of daily life regularly legislated and controlled."
+  },
+  {
+    "code": "G",
+    "value": 16,
+    "description": "Severe punishment for petty infractions."
+  },
+  {
+    "code": "H",
+    "value": 17,
+    "description": "Legalized oppressive practices."
+  },
+  {
+    "code": "I",
+    "value": null,
+    "description": "Erroneous value - I is not a valid Traveller hex digit."
+  },
+  {
+    "code": "J",
+    "value": 18,
+    "description": "Routinely oppressive and restrictive."
+  },
+  {
+    "code": "K",
+    "value": 19,
+    "description": "Excessively oppressive and restrictive."
+  },
+  {
+    "code": "L",
+    "value": 20,
+    "description": "Totally oppressive and restrictive."
+  },
+  { "code": "S", "value": 26, "description": "Special/Variable situation." },
+  { "code": "T", "value": 27, "description": "" },
+  { "code": "U", "value": 28, "description": "" },
+  { "code": "V", "value": 29, "description": "" },
+  { "code": "X", "value": null, "description": "Unknown" }
+]

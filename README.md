@@ -22,9 +22,9 @@ Download posters
 uv run tmdownload.py -p -vv -j
 ```
 
-### create-db
+### build-db
 
-Create database
+Build database
 
 ```sh
 uv run tmdownload.py -d -vv -j

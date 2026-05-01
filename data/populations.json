@@ -1,0 +1,40 @@
+[
+  { "code": "?", "value": null, "description": "Unknown" },
+  {
+    "code": "0",
+    "value": 0,
+    "description": "Low population (up to a few dozen)."
+  },
+  { "code": "1", "value": 1, "description": "Tens to hundreds." },
+  { "code": "2", "value": 2, "description": "Hundreds to thousands." },
+  { "code": "3", "value": 3, "description": "Thousands to tens of thousands." },
+  {
+    "code": "4",
+    "value": 4,
+    "description": "Tens of thousands to hundreds of thousands."
+  },
+  {
+    "code": "5",
+    "value": 5,
+    "description": "Hundreds of thousands to millions."
+  },
+  { "code": "6", "value": 6, "description": "Millions to tens of millions." },
+  {
+    "code": "7",
+    "value": 7,
+    "description": "Tens of millions to hundreds of millions."
+  },
+  {
+    "code": "8",
+    "value": 8,
+    "description": "Hundreds of millions to billions."
+  },
+  { "code": "9", "value": 9, "description": "Billions." },
+  { "code": "A", "value": 10, "description": "Tens of billions." },
+  { "code": "B", "value": 11, "description": "Hundreds of billions." },
+  { "code": "C", "value": 12, "description": "Trillions." },
+  { "code": "D", "value": 13, "description": "Tens of trillions." },
+  { "code": "E", "value": 14, "description": "Hundreds of trillions." },
+  { "code": "F", "value": 15, "description": "Quadrillions." },
+  { "code": "X", "value": null, "description": "Unknown" }
+]
