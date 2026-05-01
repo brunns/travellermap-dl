@@ -30,7 +30,7 @@ class Sector(Base):
     y_coordinate = Column(Float, nullable=False)
     milieu_id = Column(Integer, ForeignKey("milieus.id"), nullable=False)
 
-    UniqueConstraint("name", "milieu_id")
+    __table_args__ = (UniqueConstraint("name", "milieu_id"),)
 
     subsectors = relationship("Subsector", back_populates="sector", cascade="all, delete-orphan")
     milieu = relationship("Milieu", back_populates="sector_data")
@@ -49,7 +49,7 @@ class Subsector(Base):
     index = Column(String, nullable=False)
     sector_id = Column(Integer, ForeignKey("sectors.id"), nullable=False)
 
-    UniqueConstraint("name", "sector_id")
+    __table_args__ = (UniqueConstraint("index", "sector_id"),)
 
     sector = relationship("Sector", back_populates="subsectors")
     worlds = relationship("World", back_populates="subsector", cascade="all, delete-orphan")
@@ -80,7 +80,7 @@ class World(Base):
     zone = Column(String, nullable=False)
     bases = Column(String, nullable=False)
 
-    UniqueConstraint("hex_location", "subsector_id")
+    __table_args__ = (UniqueConstraint("hex_location", "subsector_id"),)
 
     subsector = relationship("Subsector", back_populates="worlds")
     starport = relationship("Starport")
