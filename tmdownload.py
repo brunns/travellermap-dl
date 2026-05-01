@@ -1,14 +1,14 @@
 #!/usr/bin/env -S uv run
 # /// script
-# requires-python = ">=3.13"
+# requires-python = ">=3.14"
 # dependencies = [
-#     "SQLAlchemy",
-#     "httpx",
-#     "brunns-row",
-#     "pydantic",
-#     "python-json-logger",
-#     "tdqm",
-#     "yarl",
+#     "SQLAlchemy~=2.0",
+#     "httpx[http2]~=0.28",
+#     "brunns-row~=2.0",
+#     "pydantic~=2.0",
+#     "python-json-logger~=3.0",
+#     "tqdm~=4.0",
+#     "yarl~=1.0",
 # ]
 # ///
 
@@ -22,7 +22,7 @@ import warnings
 from contextlib import nullcontext
 from itertools import product
 from pathlib import Path
-from typing import TYPE_CHECKING, TypeVar
+from typing import TYPE_CHECKING
 
 import httpx
 from pydantic import BaseModel, Field, ValidationError
@@ -57,7 +57,7 @@ def main() -> None:
         engine = None
 
     with (
-        httpx.Client(timeout=30, transport=httpx.HTTPTransport(retries=5)) as client,
+        httpx.Client(timeout=30, transport=httpx.HTTPTransport(http2=True, retries=5)) as client,
         Session(engine) if engine else nullcontext() as session,
     ):
         sectors = get_sectors(client, args.output_location, args.travellermap_url)
@@ -438,7 +438,7 @@ class TechLevel(Base):
     remarks = Column(String, nullable=True)
 
     def __repr__(self) -> str:
-        return f"<TechLevel(value='{self.value}', name='{self.name}', description='{self.description}')>"
+        return f"<TechLevel(value='{self.value}', name='{self.name}')>"
 
 
 def init_database(engine: Engine) -> None:
@@ -466,7 +466,7 @@ def populate_database(sector: ApiSector, sector_dir: Path, session: Session) -> 
     session.add(db_sector)
 
     db_subsectors: dict[str, Subsector] = {}
-    for subsector in sector.subsectors if sector.subsectors else []:
+    for subsector in sector.subsectors or []:
         db_subsector = Subsector(sector=db_sector, name=subsector.name, index=subsector.index)
         db_subsectors[subsector.index] = db_subsector
     session.add_all(db_subsectors.values())
@@ -514,10 +514,7 @@ def populate_database(sector: ApiSector, sector_dir: Path, session: Session) -> 
                 session.commit()
 
 
-T = TypeVar("T", bound=Base)
-
-
-def get_relation(entity: type[T], key: str, session: Session) -> T:
+def get_relation[T: Base](entity: type[T], key: str, session: Session) -> T:
     try:
         return session.query(entity).filter_by(code=key).one()
     except NoResultFound:
@@ -658,8 +655,8 @@ STARPORT_DATA = [
 
 SIZE_DATA = [
     {"code": "?", "value": None, "description": "Unknown"},
-    {"code": "0", "value": 0, "value": 0, "description": "Asteroid/Planetoid Belt."},
-    {"code": "1", "value": 1, "value": 1, "description": "1000 miles (1600 km) ."},
+    {"code": "0", "value": 0, "description": "Asteroid/Planetoid Belt."},
+    {"code": "1", "value": 1, "description": "1000 miles (1600 km) ."},
     {"code": "2", "value": 2, "description": "2000 miles (3200 km)."},
     {"code": "3", "value": 3, "description": "3000 miles (4800 km)."},
     {"code": "4", "value": 4, "description": "4000 miles (6400 km)."},

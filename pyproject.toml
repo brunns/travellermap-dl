@@ -1,21 +1,22 @@
 [project]
 name = "travmap"
 version = "0.1.0"
-description = "Add your description here"
+description = "Download sector data from https://travellermap.com"
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.14"
 dependencies = [
-     "SQLAlchemy",
-     "httpx",
-     "pydantic",
-     "python-json-logger",
-     "tqdm",
-     "yarl",
+     "SQLAlchemy~=2.0",
+     "brunns-row~=2.0",
+     "httpx[http2]~=0.28",
+     "pydantic~=2.0",
+     "python-json-logger~=3.0",
+     "tqdm~=4.0",
+     "yarl~=1.0",
 ]
 
 [tool.ruff]
 line-length = 120
-target-version = "py313"
+target-version = "py314"
 
 [tool.ruff.lint]
 select = ["ALL"]
@@ -29,4 +30,4 @@ max-complexity = 10
 
 [tool.pyright]
 include = ["*.py"]
-pythonVersion = "3.13"
+pythonVersion = "3.14"

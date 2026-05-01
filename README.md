@@ -4,12 +4,14 @@ See [The Traveller Map API](https://travellermap.com/doc/api).
 
 ## Tasks
 
+These tasks can be run using [xc](https://xcfile.dev/).
+
 ### download-all
 
 Download posters and create database
 
 ```sh
-uv run tmdownload.py -vv
+uv run tmdownload.py -vv -j
 ```
 
 ### download-poster
@@ -17,7 +19,7 @@ uv run tmdownload.py -vv
 Download posters
 
 ```sh
-uv run tmdownload.py -p -vv
+uv run tmdownload.py -p -vv -j
 ```
 
 ### create-db
@@ -25,7 +27,7 @@ uv run tmdownload.py -p -vv
 Create database
 
 ```sh
-uv run tmdownload.py -d -vv
+uv run tmdownload.py -d -vv -j
 ```
 
 ### explore-db
