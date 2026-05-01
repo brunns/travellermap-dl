@@ -111,7 +111,7 @@ class World(Base):
             f"hydrosphere='{self.hydrosphere.value if self.hydrosphere else None}', "
             f"government='{self.government.value if self.government else None}', "
             f"law_level='{self.law_level.value if self.law_level else None}', "
-            f"tech_level='{self.tech_level.name if self.law_level else None}'"
+            f"tech_level='{self.tech_level.name if self.tech_level else None}', "
             f"zone='{self.zone}', "
             f"bases='{self.bases}', "
             ")>"

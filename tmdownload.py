@@ -207,6 +207,7 @@ def populate_database(sector: ApiSector, sector_dir: Path, session: Session) -> 
                     government=get_relation(db_models.Government, government, session),
                     law_level=get_relation(db_models.LawLevel, law_level, session),
                     tech_level=get_relation(db_models.TechLevel, tech_level, session),
+                    trade_codes=row.get("Remarks", ""),
                     zone=row.get("Zone", ""),
                     bases=row.get("Bases", ""),
                 )
@@ -236,7 +237,7 @@ def get_relation[T: db_models.Base](entity: type[T], key: str, session: Session)
 
 
 def create_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Display status of GitHub Actions..")
+    parser = argparse.ArgumentParser(description="Download sector data from travellermap.com.")
 
     parser.add_argument("-p", "--download-posters", action="store_true", help="Download posters as PDF files")
     parser.add_argument("-d", "--populate-database", action="store_true", help="Populate database with world data")
