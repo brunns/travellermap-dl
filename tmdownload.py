@@ -477,14 +477,18 @@ def populate_database(sector: ApiSector, sector_dir: Path, session: Session) -> 
         for row in reader:
             # See https://travellermap.com/doc/fileformats#t5-tab-delimited-format for columns
 
-            starport, size, atmosphere, hydrosphere, population, government, law_level, _, tech_level, *_ = list(
-                row["UWP"]
-            )
-
             try:
+                starport, size, atmosphere, hydrosphere, population, government, law_level, _, tech_level, *_ = list(
+                    row["UWP"]
+                )
+                ss_index = row["SS"]
+                if ss_index not in db_subsectors:
+                    db_subsector = Subsector(sector=db_sector, name="?", index=ss_index)
+                    session.add(db_subsector)
+                    db_subsectors[ss_index] = db_subsector
                 world = World(
                     name=row["Name"],
-                    subsector=db_subsectors[row["SS"]],
+                    subsector=db_subsectors[ss_index],
                     hex_location=row["Hex"],
                     starport=get_relation(Starport, starport, session),
                     size=get_relation(Size, size, session),
@@ -498,7 +502,7 @@ def populate_database(sector: ApiSector, sector_dir: Path, session: Session) -> 
                     bases=row.get("Bases", ""),
                 )
                 session.add(world)
-            except (NoResultFound, IntegrityError, KeyError) as e:
+            except (NoResultFound, IntegrityError, KeyError, ValueError) as e:
                 logger.warning(
                     "Exception for world %s, %s, %s, %s, %s - skipped",
                     sector.milieu,
@@ -992,7 +996,14 @@ TECH_LEVEL_DATA = [
         "ce": "N/A",
         "remarks": "Hop-4, Relativity rifle.",
     },
-    {"code": "N", "value": 22, "name": "Planet-scrubber Age", "imperial": "N/A", "ce": "N/A", "": "Hop-5, Skip-2"},
+    {
+        "code": "N",
+        "value": 22,
+        "name": "Planet-scrubber Age",
+        "imperial": "N/A",
+        "ce": "N/A",
+        "remarks": "Hop-5, Skip-2",
+    },
     {
         "code": "P",
         "value": 23,
