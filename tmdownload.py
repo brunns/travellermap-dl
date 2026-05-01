@@ -4,7 +4,7 @@
 # dependencies = [
 #     "SQLAlchemy~=2.0",
 #     "httpx[http2]~=0.28",
-#     "brunns-row~=2.0",
+#     "brunns-row~=2.2",
 #     "pydantic~=2.0",
 #     "python-json-logger~=3.0",
 #     "tqdm~=4.0",
@@ -26,6 +26,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 import httpx
+from brunns.row.rowwrapper import RowWrapper
 from pydantic import ValidationError
 from pythonjsonlogger.json import JsonFormatter
 from sqlalchemy import Engine, create_engine, insert
@@ -183,22 +184,27 @@ def populate_database(sector: ApiSector, sector_dir: Path, session: Session) -> 
 
     with (sector_dir / f"{sector.names[0].text}.tsv").open("r") as f:
         reader = csv.DictReader(f, delimiter="\t")
-        for row in reader:
+        fieldnames = reader.fieldnames
+        if fieldnames is None:
+            msg = "TSV has no header row"
+            raise ValueError(msg)
+        wrapper = RowWrapper(fieldnames)
+        for row in wrapper.wrap_all(reader):
             # See https://travellermap.com/doc/fileformats#t5-tab-delimited-format for columns
 
             try:
                 starport, size, atmosphere, hydrosphere, population, government, law_level, _, tech_level, *_ = list(
-                    row["UWP"]
+                    row.UWP
                 )
-                ss_index = row["SS"]
+                ss_index = row.SS
                 if ss_index not in db_subsectors:
                     db_subsector = db_models.Subsector(sector=db_sector, name="?", index=ss_index)
                     session.add(db_subsector)
                     db_subsectors[ss_index] = db_subsector
                 world = db_models.World(
-                    name=row["Name"],
+                    name=row.Name,
                     subsector=db_subsectors[ss_index],
-                    hex_location=row["Hex"],
+                    hex_location=row.Hex,
                     starport=get_relation(db_models.Starport, starport, session),
                     size=get_relation(db_models.Size, size, session),
                     atmosphere=get_relation(db_models.Atmosphere, atmosphere, session),
@@ -207,9 +213,9 @@ def populate_database(sector: ApiSector, sector_dir: Path, session: Session) -> 
                     government=get_relation(db_models.Government, government, session),
                     law_level=get_relation(db_models.LawLevel, law_level, session),
                     tech_level=get_relation(db_models.TechLevel, tech_level, session),
-                    trade_codes=row.get("Remarks", ""),
-                    zone=row.get("Zone", ""),
-                    bases=row.get("Bases", ""),
+                    trade_codes=row.Remarks or "",
+                    zone=row.Zone or "",
+                    bases=row.Bases or "",
                 )
                 session.add(world)
             except (NoResultFound, IntegrityError, KeyError, ValueError) as e:
@@ -217,9 +223,9 @@ def populate_database(sector: ApiSector, sector_dir: Path, session: Session) -> 
                     "Exception for world %s, %s, %s, %s, %s - skipped",
                     sector.milieu,
                     sector.names[0].text,
-                    row.get("SS"),
-                    row.get("Name"),
-                    row.get("UWP"),
+                    row.SS,
+                    row.Name,
+                    row.UWP,
                     extra=locals(),
                     exc_info=e,
                 )

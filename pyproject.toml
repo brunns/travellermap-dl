@@ -6,7 +6,7 @@ readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
      "SQLAlchemy~=2.0",
-     "brunns-row~=2.0",
+     "brunns-row~=2.2",
      "httpx[http2]~=0.28",
      "pydantic~=2.0",
      "python-json-logger~=3.0",
