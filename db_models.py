@@ -30,7 +30,7 @@ class Sector(Base):
     y_coordinate: Mapped[float] = mapped_column()
     milieu_id: Mapped[int] = mapped_column(ForeignKey("milieus.id"))
 
-    __table_args__ = (UniqueConstraint("name", "milieu_id"),)
+    __table_args__ = (UniqueConstraint("x_coordinate", "y_coordinate", "milieu_id"),)
 
     subsectors: Mapped[list[Subsector]] = relationship(back_populates="sector", cascade="all, delete-orphan")
     milieu: Mapped[Milieu] = relationship(back_populates="sector_data")

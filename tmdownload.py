@@ -170,17 +170,24 @@ def populate_database(sector: ApiSector, sector_dir: Path, session: Session) -> 
         db_milieu = db_models.Milieu(name=sector.milieu)
         session.add(db_milieu)
 
-    db_sector = db_models.Sector(
-        name=sector.names[0].text, milieu=db_milieu, x_coordinate=sector.x, y_coordinate=sector.y
+    db_sector = (
+        session.query(db_models.Sector)
+        .filter_by(x_coordinate=sector.x, y_coordinate=sector.y, milieu=db_milieu)
+        .first()
     )
-    session.add(db_sector)
-
-    db_subsectors: dict[str, db_models.Subsector] = {}
-    for subsector in sector.subsectors or []:
-        db_subsector = db_models.Subsector(sector=db_sector, name=subsector.name, index=subsector.index)
-        db_subsectors[subsector.index] = db_subsector
-    session.add_all(db_subsectors.values())
-    session.commit()
+    if db_sector:
+        db_subsectors: dict[str, db_models.Subsector] = {s.index: s for s in db_sector.subsectors}
+    else:
+        db_sector = db_models.Sector(
+            name=sector.names[0].text, milieu=db_milieu, x_coordinate=sector.x, y_coordinate=sector.y
+        )
+        session.add(db_sector)
+        db_subsectors = {}
+        for subsector in sector.subsectors or []:
+            db_subsector = db_models.Subsector(sector=db_sector, name=subsector.name, index=subsector.index)
+            db_subsectors[subsector.index] = db_subsector
+        session.add_all(db_subsectors.values())
+        session.commit()
 
     with (sector_dir / f"{sector.names[0].text}.tsv").open("r") as f:
         reader = csv.DictReader(f, delimiter="\t")
@@ -218,6 +225,7 @@ def populate_database(sector: ApiSector, sector_dir: Path, session: Session) -> 
                     bases=row.Bases or "",
                 )
                 session.add(world)
+                session.commit()
             except (NoResultFound, IntegrityError, KeyError, ValueError) as e:
                 logger.warning(
                     "Exception for world %s, %s, %s, %s, %s - skipped",
@@ -230,8 +238,6 @@ def populate_database(sector: ApiSector, sector_dir: Path, session: Session) -> 
                     exc_info=e,
                 )
                 session.rollback()
-            else:
-                session.commit()
 
 
 def get_relation[T: db_models.Base](entity: type[T], key: str, session: Session) -> T:
