@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from sqlalchemy import Column, Float, ForeignKey, Integer, String, UniqueConstraint
-from sqlalchemy.orm import DeclarativeBase, relationship
+from sqlalchemy import ForeignKey, UniqueConstraint
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
 class Base(DeclarativeBase):
@@ -11,11 +11,11 @@ class Base(DeclarativeBase):
 class Milieu(Base):
     __tablename__ = "milieus"
 
-    id = Column(Integer, primary_key=True)
-    name = Column(String, nullable=False, unique=True)
-    description = Column(String, nullable=True)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(unique=True)
+    description: Mapped[str | None] = mapped_column()
 
-    sector_data = relationship("Sector", back_populates="milieu")
+    sector_data: Mapped[list[Sector]] = relationship(back_populates="milieu")
 
     def __repr__(self) -> str:
         return f"<Milieu(name='{self.name}', description='{self.description}')>"
@@ -24,16 +24,16 @@ class Milieu(Base):
 class Sector(Base):
     __tablename__ = "sectors"
 
-    id = Column(Integer, primary_key=True)
-    name = Column(String, nullable=False)
-    x_coordinate = Column(Float, nullable=False)
-    y_coordinate = Column(Float, nullable=False)
-    milieu_id = Column(Integer, ForeignKey("milieus.id"), nullable=False)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column()
+    x_coordinate: Mapped[float] = mapped_column()
+    y_coordinate: Mapped[float] = mapped_column()
+    milieu_id: Mapped[int] = mapped_column(ForeignKey("milieus.id"))
 
     __table_args__ = (UniqueConstraint("name", "milieu_id"),)
 
-    subsectors = relationship("Subsector", back_populates="sector", cascade="all, delete-orphan")
-    milieu = relationship("Milieu", back_populates="sector_data")
+    subsectors: Mapped[list[Subsector]] = relationship(back_populates="sector", cascade="all, delete-orphan")
+    milieu: Mapped[Milieu] = relationship(back_populates="sector_data")
 
     def __repr__(self) -> str:
         return (
@@ -44,15 +44,15 @@ class Sector(Base):
 class Subsector(Base):
     __tablename__ = "subsectors"
 
-    id = Column(Integer, primary_key=True)
-    name = Column(String, nullable=False)
-    index = Column(String, nullable=False)
-    sector_id = Column(Integer, ForeignKey("sectors.id"), nullable=False)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column()
+    index: Mapped[str] = mapped_column()
+    sector_id: Mapped[int] = mapped_column(ForeignKey("sectors.id"))
 
     __table_args__ = (UniqueConstraint("index", "sector_id"),)
 
-    sector = relationship("Sector", back_populates="subsectors")
-    worlds = relationship("World", back_populates="subsector", cascade="all, delete-orphan")
+    sector: Mapped[Sector] = relationship(back_populates="subsectors")
+    worlds: Mapped[list[World]] = relationship(back_populates="subsector", cascade="all, delete-orphan")
 
     def __repr__(self) -> str:
         return (
@@ -64,33 +64,33 @@ class Subsector(Base):
 class World(Base):
     __tablename__ = "worlds"
 
-    id = Column(Integer, primary_key=True)
-    name = Column(String, nullable=False)
-    subsector_id = Column(Integer, ForeignKey("subsectors.id"), nullable=False)
-    hex_location = Column(String, nullable=False)
-    population_id = Column(Integer, ForeignKey("populations.id"), nullable=False)
-    tech_level_id = Column(Integer, ForeignKey("tech_levels.id"), nullable=False)
-    starport_id = Column(Integer, ForeignKey("starports.id"), nullable=False)
-    size_id = Column(Integer, ForeignKey("sizes.id"), nullable=False)
-    atmosphere_id = Column(Integer, ForeignKey("atmospheres.id"), nullable=False)
-    hydrosphere_id = Column(Integer, ForeignKey("hydrospheres.id"), nullable=False)
-    government_id = Column(Integer, ForeignKey("governments.id"), nullable=False)
-    law_level_id = Column(Integer, ForeignKey("law_levels.id"), nullable=False)
-    trade_codes = Column(String, nullable=True)
-    zone = Column(String, nullable=False)
-    bases = Column(String, nullable=False)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column()
+    subsector_id: Mapped[int] = mapped_column(ForeignKey("subsectors.id"))
+    hex_location: Mapped[str] = mapped_column()
+    population_id: Mapped[int] = mapped_column(ForeignKey("populations.id"))
+    tech_level_id: Mapped[int] = mapped_column(ForeignKey("tech_levels.id"))
+    starport_id: Mapped[int] = mapped_column(ForeignKey("starports.id"))
+    size_id: Mapped[int] = mapped_column(ForeignKey("sizes.id"))
+    atmosphere_id: Mapped[int] = mapped_column(ForeignKey("atmospheres.id"))
+    hydrosphere_id: Mapped[int] = mapped_column(ForeignKey("hydrospheres.id"))
+    government_id: Mapped[int] = mapped_column(ForeignKey("governments.id"))
+    law_level_id: Mapped[int] = mapped_column(ForeignKey("law_levels.id"))
+    trade_codes: Mapped[str | None] = mapped_column()
+    zone: Mapped[str] = mapped_column()
+    bases: Mapped[str] = mapped_column()
 
     __table_args__ = (UniqueConstraint("hex_location", "subsector_id"),)
 
-    subsector = relationship("Subsector", back_populates="worlds")
-    starport = relationship("Starport")
-    size = relationship("Size")
-    atmosphere = relationship("Atmosphere")
-    hydrosphere = relationship("Hydrosphere")
-    population = relationship("Population")
-    government = relationship("Government")
-    law_level = relationship("LawLevel")
-    tech_level = relationship("TechLevel")
+    subsector: Mapped[Subsector] = relationship(back_populates="worlds")
+    starport: Mapped[Starport] = relationship()
+    size: Mapped[Size] = relationship()
+    atmosphere: Mapped[Atmosphere] = relationship()
+    hydrosphere: Mapped[Hydrosphere] = relationship()
+    population: Mapped[Population] = relationship()
+    government: Mapped[Government] = relationship()
+    law_level: Mapped[LawLevel] = relationship()
+    tech_level: Mapped[TechLevel] = relationship()
 
     @property
     def uwp(self) -> str:
@@ -123,11 +123,11 @@ class Starport(Base):
 
     __tablename__ = "starports"
 
-    id = Column(Integer, primary_key=True)
-    code = Column(String, nullable=False, unique=True)
-    value = Column(Integer, nullable=True, unique=False)
-    name = Column(String, nullable=False)
-    description = Column(String, nullable=True)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    code: Mapped[str] = mapped_column(unique=True)
+    value: Mapped[int | None] = mapped_column()
+    name: Mapped[str] = mapped_column()
+    description: Mapped[str | None] = mapped_column()
 
     def __repr__(self) -> str:
         return f"<Starport(value='{self.value}', name='{self.name}', description='{self.description}')>"
@@ -136,10 +136,10 @@ class Starport(Base):
 class Size(Base):
     __tablename__ = "sizes"
 
-    id = Column(Integer, primary_key=True)
-    code = Column(String, nullable=False, unique=True)
-    value = Column(Integer, nullable=True, unique=False)
-    description = Column(String, nullable=True)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    code: Mapped[str] = mapped_column(unique=True)
+    value: Mapped[int | None] = mapped_column()
+    description: Mapped[str | None] = mapped_column()
 
     def __repr__(self) -> str:
         return f"<Size(value='{self.value}', description='{self.description}')>"
@@ -148,10 +148,10 @@ class Size(Base):
 class Atmosphere(Base):
     __tablename__ = "atmospheres"
 
-    id = Column(Integer, primary_key=True)
-    code = Column(String, nullable=False, unique=True)
-    value = Column(Integer, nullable=True, unique=False)
-    description = Column(String, nullable=True)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    code: Mapped[str] = mapped_column(unique=True)
+    value: Mapped[int | None] = mapped_column()
+    description: Mapped[str | None] = mapped_column()
 
     def __repr__(self) -> str:
         return f"<Atmosphere(value='{self.value}', description='{self.description}')>"
@@ -160,10 +160,10 @@ class Atmosphere(Base):
 class Hydrosphere(Base):
     __tablename__ = "hydrospheres"
 
-    id = Column(Integer, primary_key=True)
-    code = Column(String, nullable=False, unique=True)
-    value = Column(Integer, nullable=True, unique=False)
-    description = Column(String, nullable=True)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    code: Mapped[str] = mapped_column(unique=True)
+    value: Mapped[int | None] = mapped_column()
+    description: Mapped[str | None] = mapped_column()
 
     def __repr__(self) -> str:
         return f"<Hydrosphere(value='{self.value}', description='{self.description}')>"
@@ -172,10 +172,10 @@ class Hydrosphere(Base):
 class Government(Base):
     __tablename__ = "governments"
 
-    id = Column(Integer, primary_key=True)
-    code = Column(String, nullable=False, unique=True)
-    value = Column(Integer, nullable=True, unique=False)
-    description = Column(String, nullable=True)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    code: Mapped[str] = mapped_column(unique=True)
+    value: Mapped[int | None] = mapped_column()
+    description: Mapped[str | None] = mapped_column()
 
     def __repr__(self) -> str:
         return f"<Government(value='{self.value}', description='{self.description}')>"
@@ -184,10 +184,10 @@ class Government(Base):
 class LawLevel(Base):
     __tablename__ = "law_levels"
 
-    id = Column(Integer, primary_key=True)
-    code = Column(String, nullable=False, unique=True)
-    value = Column(Integer, nullable=True, unique=False)
-    description = Column(String, nullable=True)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    code: Mapped[str] = mapped_column(unique=True)
+    value: Mapped[int | None] = mapped_column()
+    description: Mapped[str | None] = mapped_column()
 
     def __repr__(self) -> str:
         return f"<LawLevel(value='{self.value}', description='{self.description}')>"
@@ -196,10 +196,10 @@ class LawLevel(Base):
 class Population(Base):
     __tablename__ = "populations"
 
-    id = Column(Integer, primary_key=True)
-    code = Column(String, nullable=False, unique=True)
-    value = Column(Integer, nullable=True, unique=False)
-    description = Column(String, nullable=True)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    code: Mapped[str] = mapped_column(unique=True)
+    value: Mapped[int | None] = mapped_column()
+    description: Mapped[str | None] = mapped_column()
 
     def __repr__(self) -> str:
         return f"<Population(value='{self.value}', description='{self.description}')>"
@@ -208,13 +208,13 @@ class Population(Base):
 class TechLevel(Base):
     __tablename__ = "tech_levels"
 
-    id = Column(Integer, primary_key=True)
-    code = Column(String, nullable=False, unique=True)
-    value = Column(Integer, nullable=True, unique=False)
-    name = Column(String, nullable=False)
-    imperial = Column(String, nullable=False)
-    ce = Column(String, nullable=False)
-    remarks = Column(String, nullable=True)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    code: Mapped[str] = mapped_column(unique=True)
+    value: Mapped[int | None] = mapped_column()
+    name: Mapped[str] = mapped_column()
+    imperial: Mapped[str] = mapped_column()
+    ce: Mapped[str] = mapped_column()
+    remarks: Mapped[str | None] = mapped_column()
 
     def __repr__(self) -> str:
         return f"<TechLevel(value='{self.value}', name='{self.name}')>"
